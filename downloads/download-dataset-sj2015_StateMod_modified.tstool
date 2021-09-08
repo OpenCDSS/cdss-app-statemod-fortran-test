@@ -1,0 +1,21 @@
+# Download and unzip CDSS sj2015_StateModified_modified dataset:
+# - sometimes the website is offline or URL changes and an HTML error page is returned,
+#   so check the file size
+#
+# =====================================================================
+# Download dataset:
+# - use the same local file as if the download was performed manually
+# - it is up to the State and modelers to be consistent with naming
+# - as of 2021-09-07 the zip file is 9.2 MB
+SetProperty(PropertyName="DownloadZipFile",PropertyType=String,PropertyValue="datasets/sj2015_StateMod_modified.zip")
+WebGet(URI="https://dnrftp.state.co.us/CDSS/ModelFiles/StateMod/sj2015_StateMod_modified.zip",LocalFile="${DownloadZipFile}",ResponseCodeProperty="WebGetHttpCode")
+CheckFile(InputFile="${DownloadZipFile}",IfNotFound="Fail",Statistic="FileSizeBytes",CheckCriteria="<",CheckValue1=1000000,IfCriteriaMet=Fail,CheckResultPropertyName="DownloadStatus",CriteriaMetPropertyValue="Failure",CriteriaNotMetPropertyValue="Success")
+If(Name="If_DownloadOK",Condition="${DownloadStatus} == Failure")
+Message(Message="Download failed.  Exiting without unzipping.",CommandStatus=FAILURE)
+Exit()
+EndIf(Name="If_DownloadOK")
+# Unzip to the standard dataset folder for StateMod model files:
+# - there will be multiple folders, with "StateMod" being the main folder
+# - to ensure that the files are current, delete existing
+# - since the delete operation is destructive, prompt for confirmation
+UnzipFile(InputFile="${DownloadZipFile}",OutputFolder="../test/datasets/sj2015_StateMod_modified/0-dataset",RemoveOutputFolder=TrueWithPrompt)

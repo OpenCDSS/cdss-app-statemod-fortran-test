@@ -1,12 +1,15 @@
 # List of files to ignore globally in the repository
 
 # Temporary editor files
-
 *.swp
 *.swo
 
 # Temporary Windows files
 ~$*
+
+# General exclusions.
+*.exe
+*.log
 
 # Products of compiling software (but need to be careful if library dependencies are included)
 *.o
@@ -50,3 +53,20 @@ fort.*
 *.xss
 *.xtb
 *.xwr
+
+# Specific folders that should be ignored:
+# - downloads are large and dynamic
+# - datasets are large and dynamic
+# - ignore except for README.md that explains folders
+
+# Downloads.
+/downloads/datasets/*
+!/downloads/datasets/README.md
+/downloads/executable-zips/*
+!/downloads/executable-zips/README.md
+/downloads/executables/*
+!/downloads/executables/README.md
+
+# Datasets.
+/test/datasets/*
+!/test/datasets/README.md
