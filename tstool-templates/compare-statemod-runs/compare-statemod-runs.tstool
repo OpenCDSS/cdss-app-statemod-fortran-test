@@ -1,0 +1,51 @@
+StartLog(LogFile="results/compare-statemod-runs.tstool.log",MaxSize="100000000")
+# Template command file to compare two StateMod datasets:
+# - use properties for controlling information so that command can be easily modified
+# - there are 38 b43 (diversion and stream) output parameters * nlocations = nts (number of time series)
+# - there are 28 b44 (reservoir) output parameters * nlocations = nts (number of time series)
+# - nts * nyears * 12 * 4bytes = approximate memory in bytes for time series data
+SetProperty(PropertyName="RunStartTime",PropertyType=DateTime,PropertyValue="CurrentToSecond")
+# Specify the location of model datasets:
+# - the following three lines can be enabled for troubleshooting
+# - the 'statemod-test.bash' script provides the folders using TSTool command line parameters:
+#     Dataset1Folder==xxx Dataset2Folder==xxx Scenario=xxx
+#SetProperty(PropertyName="Dataset1Folder",PropertyType=String,PropertyValue="../../exes/statemod-17.0.2-gfortran-win-64bit/wm2015_StateMod_modified/wm2015_StateMod_modified/StateMod")
+#SetProperty(PropertyName="Dataset2Folder",PropertyType=String,PropertyValue="../../exes/statemod-17.0.2-gfortran-win-32bit/wm2015_StateMod_modified/wm2015_StateMod_modified/StateMod")
+#SetProperty(PropertyName="Scenario",PropertyType=String,PropertyValue="wm2015H")
+SetProperty(PropertyName="TSIDPattern",PropertyType=String,PropertyValue="*")
+# Use the following to process fewer time series for testing.
+# SetProperty(PropertyName="TSIDPattern",PropertyType=String,PropertyValue="*.*.Total_Demand.*.*")
+# Read all of the time series matching the requested TSID pattern:
+# - can set to a subset for testing and then use "*" for full run
+# - read b42 (well), b43 (diversion and stream), b44 (reservoir) for monthly
+# - use the alias to help with uniqueness because b43 and b44 time series would not otherwise be unique
+# - TODO smalers 2021-09-09 need to add daily
+ReadStateModB(InputFile="${Dataset1Folder}/${Scenario}.b43",TSID="${TSIDPattern}",Alias="b43-%L-%T")
+ReadStateModB(InputFile="${Dataset2Folder}/${Scenario}.b43",TSID="${TSIDPattern}",Alias="b43-%L-%T")
+ReadStateModB(InputFile="${Dataset1Folder}/${Scenario}.b44",TSID="${TSIDPattern}",Alias="b44-%L-%T")
+ReadStateModB(InputFile="${Dataset2Folder}/${Scenario}.b44",TSID="${TSIDPattern}",Alias="b44-%L-%T")
+# Ignore well files if don't exist since only used in some datasets.
+ReadStateModB(InputFile="${Dataset1Folder}/${Scenario}.b42",TSID="${TSIDPattern}",Alias="b42-%L-%T",IfFileNotFound="Ignore")
+ReadStateModB(InputFile="${Dataset2Folder}/${Scenario}.b42",TSID="${TSIDPattern}",Alias="b42-%L-%T",IfFileNotFound="Ignore")
+#
+# Compare time series with matching time series identifiers:
+# - smallest value of 2 allows for sufficient roundoff
+# - only create difference time series based on smallest criteria
+# - TODO smalers 2021-08-18 maybe need a way to compare based on significant digits
+CreateFolder(Folder="results",IfFolderExists=Ignore)
+CompareTimeSeries(MatchLocation=False,MatchDataType=False,MatchAlias=True,Tolerance="2,10,100,1000",CreateDiffTS=IfDifferent,DifferenceFile="results/${Scenario}-allts-differences.txt",SummaryFile="results/${Scenario}-summary-differences.txt",TableID="CompTable",DiffCountProperty="CompDiffCount",IfDifferent=Warn)
+SetProperty(PropertyName="RunEndTime",PropertyType=DateTime,PropertyValue="CurrentToSecond")
+#
+# Save the difference time series data to a file:
+# - this allows later visualization of specific time series without rerunning the comparison
+# - this may be an issue if the difference file is very large,
+#   in which case CompareTimeSeries may need to be run on individual time series
+# - maybe have a check on the number of difference time series and if too large don't write it
+# - OK to ignore if no files are selected, which indicates no differences
+SelectTimeSeries(TSList=AllMatchingTSID,TSID="Diff_*",DeselectAllFirst=True,IfNotFound=Ignore,SelectCountProperty="DiffTSCount")
+If(Name="If_HaveDiffTS",Condition="${DiffTSCount} > 0")
+WriteDateValue(TSList=SelectedTS,OutputFile="results/${Scenario}-ts-diff.dv")
+EndIf(Name="If_HaveDiffTS")
+#
+# Write information about the comparison run time, to evaluate performance.
+Message(Message="RunStartTime=${RunStartTime}, RunEndTime=${RunEndTime}")
