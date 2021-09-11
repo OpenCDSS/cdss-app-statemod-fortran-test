@@ -218,7 +218,104 @@ listTestDatasets() {
 }
 
 # This version uses 'find'.
-# List test dataset variants with line numbers.
+# List test dataset variants comparison results.
+# The number can then be entered to select a dataset variant.
+# - specify the first parameter as:
+#     "numbered" to number and indent
+#     "indented" to indent
+#     "raw" no indent and no number
+# - specify the second parameter as dataset name or glob regex
+#   TODO smalers 2021-08-18 need to get this to work
+# - this is a copy of he listTestDatasetVariants function but with 'comps/*/results' instead of 'exes'
+listTestDatasetCompResults() {
+  local ds format maxdepth mindepth searchFolders
+  local filterCommand
+  local fileCount
+
+  format="raw"
+  ds=""
+  # Brute force parse since can be 0, 1, or 2 parameters.
+  if [ $# -gt 0 ]; then
+    if [ "${1}" = "raw" -o "${1}" = "numbered" -o "${1}" = "indented" ]; then
+      format="${1}"
+    else
+      ds=${1}
+    fi
+  fi
+  if [ $# -gt 1 ]; then
+    if [ "${2}" = "raw" -o "${2}" = "numbered" -o "${2}" = "indented" ]; then
+      format="${2}"
+    else
+      if [ -z "${ds}" ]; then
+        ds=${2}
+      fi
+    fi
+  fi
+  logDebug "format=${format}"
+  logDebug "ds=${ds}"
+  logDebug "testDatasetsFolder=${testDatasetsFolder}"
+
+  if [ -n "${ds}" ]; then
+    # Have a dataset:
+    # - search matching dataset folder
+    #searchFolders=$('ls' -1 ${testDatasetsFolder}/${ds}/exes | grep -v README.md | awk '{printf("  %s\n", $0)}')
+    #mindepth=1
+    #maxdepth=1
+    # Using 'ls' does not work because it omits the full path needed by 'find', so filter after the find.
+    searchFolders=${testDatasetsFolder}
+    mindepth=5
+    maxdepth=5
+    filterCommand="cat"
+  else
+    # Listing all combinations of dataset and comparisons:
+    # - used in main menu to list without being a part of any action such as remove
+    # - specify depth to get to the files under 'comps'
+    # - no additional filter after the find is needed since listing all datasets
+    searchFolders=${testDatasetsFolder}
+    mindepth=5
+    maxdepth=5
+    filterCommand="cat"
+  fi
+
+  # Can't use ls because too complicated to filter.
+  #'ls' -1 ${testDatasetsFolder}/* | grep -v ':' | grep -v '0-dataset' | grep -v -e '^$' | awk '
+  # Use find to only get subfolders:
+  # - 'find' will show folders like the following regardless of the starting folder and depth, but number of lines will be different:
+  #   /c/Users/sam/cdss-dev/StateMod/git-repos/cdss-app-statemod-fortran-test/test/datasets/cm2015_StateMod/exes/statemod-17.0.0-gfortran-win-64bit
+  #echo "find ${searchFolders} -mindepth ${mindepth} -maxdepth ${maxdepth} -type f"
+  #find ${searchFolders} -mindepth ${mindepth} -maxdepth ${maxdepth} -type f | grep 'summary-differences.txt' | ${filterCommand} 
+  #return 0
+  find ${searchFolders} -mindepth ${mindepth} -maxdepth ${maxdepth} -type f | grep 'summary-differences.txt' | ${filterCommand} | awk -v format=${format} '
+     BEGIN {
+       line = 0
+     }
+     {
+       line = line + 1
+       # Split the long path and only print the last parts.
+       nparts = split($0, parts, "/")
+       if ( format == "numbered" ) {
+         # Print with line numbers and indent.
+         printf("  %4d - %s/%s/%s\n", line, parts[nparts-2], parts[nparts-1], parts[nparts])
+       }
+       else if ( format == "indented" ) {
+         # Print with no line numbers and indent.
+         printf("  %s/%s/%s\n", parts[nparts-2], parts[nparts-1], parts[nparts])
+       }
+       else {
+         # Print with no line numbers and no indent.
+         printf("%s/%s/%s\n", parts[nparts-2], parts[nparts-1], parts[nparts])
+       }
+     }'
+
+  # Return the number of files:
+  # - use the same filters as above
+  # - mainly want to know if non-zero
+  fileCount=$(find ${searchFolders} -mindepth ${mindepth} -maxdepth ${mindepth} -type d | grep 'summary-differences.txt' | ${filterCommand} | wc -l)
+  return ${fileCount}
+}
+
+# This version uses 'find'.
+# List test dataset variant comparisons.
 # The number can then be entered to select a dataset variant.
 # - specify the first parameter as:
 #     "numbered" to number and indent
@@ -501,7 +598,7 @@ listTestDatasetVariantScenarios() {
   logDebug "format=${format}"
 
   #'ls' -1 ${testDatasetsFolder}/${ds} | grep -v README.md | awk -v format=${format} '
-  'ls' -1 ${statemodFolder}/*.rsp | awk -v format=${format} -F/ '
+  'ls' -1 ${statemodFolder}/*.[rR][sS][pP] | awk -v format=${format} -F/ '
      BEGIN {
        line = 0
      }
@@ -509,6 +606,7 @@ listTestDatasetVariantScenarios() {
        line = line + 1
        # Remove the file extension in the line.
        sub(".rsp","",$NF)
+       sub(".RSP","",$NF)
        if ( format == "numbered" ) {
          # Print with line numbers and indent.
          printf("  %4d - %s\n", line, $NF)
@@ -527,7 +625,7 @@ listTestDatasetVariantScenarios() {
   # - use the same filters as above
   # - mainly want to know if non-zero
   # - make sure to NOT check the return status in calling code
-  fileCount=$('ls' -1 ${statemodFolder}/*.rsp | wc -l)
+  fileCount=$('ls' -1 ${statemodFolder}/*.[rR][sS][pP] | wc -l)
   return ${fileCount}
 }
 
@@ -766,12 +864,26 @@ getTestDatasetVariantStatemodFolder() {
       echo "${statemodFolder}"
       return 0
     else
-      logWarning ""
-      logWarning "Unable to determine StateMod folder in dataset:"
-      logWarning "  ${testVariantFolder}"
-      logWarning "Need to check script code to handle more dataset organization cases."
-      echo ""
-      return 1
+      # Try another subfolder in the dataset:
+      # - redundant folder is used in some datasets
+      # - for example:  wm2015_StateMod_modified/exes/statemod-17.0.0-gfortran-win-64bit/wm2015_StateMod_modified/wm2015_StateMod_modified/StateMod
+      # - the subfolder name has typically matched the zip file name but this is not guaranteed
+      # - could do a "find" but want to ensure some consistency
+      statemodFolder="${testVariantFolder}/$(basename ${testVariantParentOfExesFolder})/$(basename ${testVariantParentOfExesFolder})/StateMod"
+      if [ -d "${statemodFolder}" ]; then
+        logInfo ""
+        logInfo "StateMod folder is in second sub-folder of dataset:"
+        logInfo "  ${statemodFolder}"
+        echo "${statemodFolder}"
+        return 0
+      else
+        logWarning ""
+        logWarning "Unable to determine StateMod folder in dataset:"
+        logWarning "  ${testVariantFolder}"
+        logWarning "Need to check script code to handle more dataset organization cases."
+        echo ""
+        return 1
+      fi
     fi
   fi
   # Should not get her but if do return an error.
@@ -1188,6 +1300,9 @@ newTestDatasetComp() {
         return 1
       fi
     done
+    logInfo ""
+    logInfo "Next, use the 'runcomp' command to run a comparison for a scenario."
+    logInfo ""
   else
     # Don't continue creating comparison.
     return 0
@@ -1399,7 +1514,7 @@ parseCommandLine() {
   # Indicate specification for long options:
   # - 1 colon after an option indicates that an argument is required
   # - 2 colons after an option indicates that an argument is optional, must use --option=argument syntax
-  optstringLong="debug,help,version"
+  optstringLong="debug,help,java-xmx::,version"
   # Parse the options using getopt command:
   # - the -- is a separator between getopt options and parameters to be parsed
   # - output is simple space-delimited command line
@@ -1434,6 +1549,18 @@ parseCommandLine() {
       -v|--version) # -v or --version  Print the version.
         printVersion
         exit 0
+        ;;
+      --java-xmx) # Set the TSTool maximum memory.
+        case "$2" in
+          "") # Nothing specified so error.
+            logError "--java-xmx=memory, memory is missing."
+            exit 1
+            ;;
+          *) # Memory has been specified.
+            javaXmx=$2
+            shift 2
+            ;;
+        esac
         ;;
       --) # No more arguments.
         shift
@@ -1553,18 +1680,26 @@ printHelp() {
   elif [[ "${command}" = "runs"* ]]; then
     logText "${menuColor}runs${endColor}tatemod"
     logText ""
-    logText "Run StateMod on a test dataset variant."
-    logText "StateMod will be run on all response (*.rsp) files in the 'StateMod' folder."
+    logText "Run StateMod -sim on a test dataset variant."
+    logText "StateMod will be run response (*.rsp) files that are selected."
     logText "The results can then be used for comparisons."
   # ==========================
   # Compare
   # ==========================
-  elif [[ "${command}" = "lsc"* ]]; then
-    logText "${menuColor}lsc${endColor}omp [*dataset*]"
+  elif [[ "${command}" = "lsco"* ]]; then
+    logText "${menuColor}lsco${endColor}mp [*dataset*]"
     logText ""
     logText "With no argument, list all test datasets comparisons."
+    logText "These are comparisons configurations but may not have been run."
+    logText "Use 'runcomp' to run a comparison and 'lscsenarios' to list comparison results."
+    logText ""
     logText "With a dataset (e.g., cm2015_StateMod), list test dataset comparisons for the dataset."
     logText "The 'dataset' can contain wildcards (e.g., *cm*)."
+  elif [[ "${command}" = "lscs"* ]]; then
+    logText "${menuColor}lscs${endColor}enarios"
+    logText ""
+    logText "List all test datasets comparison results for scenarios."
+    logText "Use 'runcomp' to run a comparison for a scenario."
   elif [[ "${command}" = "newc"* ]]; then
     logText "${menuColor}newc${endColor}omp"
     logText ""
@@ -1611,9 +1746,11 @@ printUsage() {
   echoStderr ""
   echoStderr "Command options:"
   echoStderr ""
-  echoStderr "-d, --debug                     Turn debug on."
-  echoStderr "-h, --help                      Print the usage."
-  echoStderr "-v, --version                   Print the version."
+  echoStderr "-d, --debug          Turn debug on."
+  echoStderr "-h, --help           Print the usage."
+  echoStderr "--java-xmx=2048m     Specify the Java maximum memory (example shows setting to 2048 MB)."
+  echoStderr "                     Use when TSTool has OutOfMemory error."
+  echoStderr "-v, --version        Print the version."
   echoStderr ""
   echoStderr "========================================================================================================="
   echoStderr "All logging messages are printed to stderr."
@@ -1816,9 +1953,10 @@ runInteractive () {
     ${echo2} "            ${menuColor}rmt${endColor}est                 - remove test dataset folder (e.g., cm2015_StateMod)"
     ${echo2} "            ${menuColor}rmv${endColor}ariant              - remove test dataset variant folder (for executable variant)"
     ${echo2} ""
-    ${echo2} "StateMod....${menuColor}runs${endColor}tatemod            - run StateMod on a test dataset variant (dataset + executable)"
+    ${echo2} "StateMod....${menuColor}runs${endColor}tatemod            - run StateMod -sim on a test dataset variant (dataset + executable)"
     ${echo2} ""
-    ${echo2} "Compare.....${menuColor}lsc${endColor}omp [*dataset*]     - list test dataset comparisons"
+    ${echo2} "Compare.....${menuColor}lsco${endColor}mp [*dataset*]     - list test dataset comparisons (configured comparisons)"
+    ${echo2} "            ${menuColor}lscs${endColor}enarios            - list test dataset comparison scenario results (comparison results)"
     ${echo2} "            ${menuColor}newc${endColor}omp                - create a comparison for 2 dataset test variants"
     ${echo2} "            ${menuColor}runc${endColor}omp                - run a dataset variant scenario comparison using TSTool"
     ${echo2} "            ${menuColor}v${endColor}heatmap               - view a heatmap for a time series' differences"
@@ -1904,7 +2042,7 @@ runInteractive () {
     # ======================
     # Compare
     # ======================
-    elif [[ "${answer}" = "lsc"* ]]; then
+    elif [[ "${answer}" = "lsco"* ]]; then
       # List the dataset comparisons.
       answerWordCount=$(echo ${answer} | wc -w)
       logText ""
@@ -1919,6 +2057,21 @@ runInteractive () {
       fi
       logText ""
       listTestDatasetComps indented ${dataset}
+    elif [[ "${answer}" = "lscs"* ]]; then
+      # List the dataset scenario comparison results.
+      answerWordCount=$(echo ${answer} | wc -w)
+      logText ""
+      if [ "${answerWordCount}" -eq 2 ]; then
+        # Menu item followed by dataset name.
+        dataset=$(echo ${answer} | cut -d ' ' -f 2)
+        logText "Test dataset (${dataset}) comparisons:"
+      else
+        # Assume just menu item so default dataset.
+        dataset=""
+        logText "Test dataset comparison results for all datasets (output from 'runcomp' for a scenario):"
+      fi
+      logText ""
+      listTestDatasetCompResults indented ${dataset}
     elif [[ "${answer}" = "newc"* ]]; then
       # Create a new test dataset comparison:
       # - the comparison will match two variants
@@ -2089,6 +2242,12 @@ runTestDatasetComp() {
       return 1
     fi
 
+    # Set the maximum memory.
+    javaXmxOption=""
+    if [ -n "${javaXmx}" ]; then
+      javaXmxOption=" --java-xmx=${javaXmx}"
+    fi
+
     doBackground="true"
     if [ "${doBackground}" = "true" ]; then
       logInfo "${menuColor}Running TSTool in the background so that other tasks can be run.${endColor}"
@@ -2096,12 +2255,12 @@ runTestDatasetComp() {
       logInfo "${menuColor}If necessary, press return to view the menu.${endColor}"
       # Give a little time to see the above.
       sleep 1
-      ${tstoolExe} -- ${tstoolCommandFile} Dataset1Folder==${datasetStatemodFolder1} Dataset2Folder==${datasetStatemodFolder2} Scenario==${selectedScenario}&
+      ${tstoolExe} ${javaXmxOption} -- ${tstoolCommandFile} Dataset1Folder==${datasetStatemodFolder1} Dataset2Folder==${datasetStatemodFolder2} Scenario==${selectedScenario}&
       # Can't get the return status here.
       return 0
     else
       logInfo "${menuColor}Running TSTool before continuing.${endColor}"
-      ${tstoolExe} -- ${tstoolCommandFile} Dataset1Folder==${datasetStatemodFolder1} Dataset2Folder==${datasetStatemodFolder2} Scenario==${selectedScenario}
+      ${tstoolExe} ${javaXmxOption} -- ${tstoolCommandFile} Dataset1Folder==${datasetStatemodFolder1} Dataset2Folder==${datasetStatemodFolder2} Scenario==${selectedScenario}
       if [ $? -ne 0 ]; then
         logWarning ""
         logWarning "${warnColor}Error running TSTool.${endColor}"
@@ -2112,18 +2271,19 @@ runTestDatasetComp() {
   return 0
 }
 
-# Run a test dataset variant:
+# Run StateMod on a test dataset variant:
 # - matches an executable name
 # - prompt for the dataset
 runTestDatasetVariant() {
   local ndatasets selectedDataset selectedDatasetNumber
-  local selectedRsp selectedRspNumber
-  local rspCount rspFile rspFileNoExt
+  local selectedScenario selectedScenarios selectedScenarioNumber selectedScenarioNumbers
+  local scenario
   local statemodFolder statemodExecutable statemodExecutableNoExt
+  local exitStatus
 
   logText ""
-  logText "Run a dataset variant that matches an executable name."
-  logText "All scenarios (*.rsp) for the dataset variant will be run."
+  logText "Run the -sim option on a dataset variant that matches an executable name."
+  logText "Scenarios (*.rsp) for the dataset variant will be requested."
   logText "Available dataset variants:"
   logText ""
 
@@ -2203,38 +2363,57 @@ runTestDatasetVariant() {
       logWarning "${warnColor}Cannot run StateMod.  Check dataset setup.${endColor}"
       return 1
     else
-      # Run StateMod for all *.rsp files that are available.
-      # Get the 'rsp' file to know what specific dataset to run.
-      rspCount=$('ls' -1 *.rsp | wc -l)
-      logInfo "Found ${rspCount} *.rsp files.  Will run each."
-      if [ ${rspCount} -eq 0 ]; then
-        logWarning "No *.rsp file exists.  Cannot run StateMod."
-        return 1
+      # Prompt for the response files to run since they vary by basin.
+      logText ""
+      logText "Specify the response files (scenarios) to run by selecting numbers separated by spaces."
+      logText "Some response files may be used to create the natural flow input files and do not need to be rerun for simulation."
+      logText "A typical sequence for simulation is H, H2, B."
+      logText ""
+      listTestDatasetVariantScenarios numbered ${statemodFolder}
+      logText ""
+      read -p "Select the number(s) of scenarios to run separated by spaces (#/q/ ): " selectedScenarioNumbers0
+      if [ "${selectedScenarioNumbers0}" = "q" -o "${selectedScenarioNumbers0}" = "Q" ]; then
+        exit 0
+      elif [ -z "${selectedScenarioNumbers0}" ]; then
+        return 0
       fi
-      # List into an array.
-      #rspFiles=$('ls' -1 *.rsp)
-      for rspFile in ${statemodFolder}/*.rsp; do
-        # If here have the selected *.rsp file to run:
+
+      # If here run the selected scenarios:
+      # - first get the scenarios based on the numbers
+      # - the following line converts the delimited string into an array
+      IFS=", " read -r -a selectedScenarioNumbers <<< "${selectedScenarioNumbers0}"
+      for selectedScenarioNumber in "${selectedScenarioNumbers[@]}"; do
+        logDebug "Checking scenario number: ${selectedScenarioNumber}"
+        selectedScenario=$(listTestDatasetVariantScenarios ${statemodFolder} | head -${selectedScenarioNumber} | tail -1)
+        # Append the single scenario to an array.
+        selectedScenarios+=(${selectedScenario})
+        logDebug "Found scenario: ${selectedScenario}"
+      done
+
+      # Run StateMod for all selected *.rsp files.
+      exitStatusTotal=0
+      for selectedScenario in "${selectedScenarios[@]}"; do
+        # If here have the selected *.rsp files to run:
         # - run using the response file name without extension since that is the
         #   behavior that older StateMod versions support
         # - use the full path to the executable to avoid any possible conflict with PATH
         # - Windows and linux allow 255 characters for filename
         # - Windows command line can be up to 8191 and is longer in linux
-        rspFileName=$(basename ${rspFile})
-        rspFileNoExt="${rspFileName%.*}"
         logInfo "Running StateMod (the full path to the executable is used to ensure that the correct version is run):"
-        logInfo "  ${statemodExecutable} ${rspFileNoExt}"
-        ${statemodExecutable} ${rspFileNoExt}
-        if [ $? -eq 0 ]; then
-          logInfo "${okColor}Success running StateMod for: ${rspFileNoExt}${endColor}"
+        logInfo "  ${statemodExecutable} ${selectedScenario} -sim"
+        ${statemodExecutable} ${selectedScenario} -sim
+        exitStatus=$?
+        if [ "${exitStatus}" -eq 0 ]; then
+          logInfo "${okColor}Success running StateMod for: ${selectedScenario} -sim${endColor}"
         else
-          logWarning "${warnColor}Error running StateMod for: ${rspFileNoExt}${endColor}"
+          logWarning "${warnColor}Error running StateMod for: ${selectedScenario} -sim${endColor}"
           logWarning "${warnColor}See the StateMod log file mentioned above.${endColor}"
         fi
+        exitStatusTotal=$((${exitStatusTotal} + $?))
       done
     fi
   fi
-  return 0
+  return ${exitStatus}
 }
 
 # Set the path to the TSTool executable:
@@ -2500,9 +2679,15 @@ viewCompDifferenceHeatmap() {
       return 1
     fi
 
+    # Set the maximum memory.
+    javaXmxOption=""
+    if [ -n "${javaXmx}" ]; then
+      javaXmxOption=" --java-xmx=${javaXmx}"
+    fi
+
     doBackground="true"
     if [ "${doBackground}" = "true" ]; then
-      ${tstoolExe} -- ${tstoolCommandFile} --space-replacement='___' TSID=="${tsid}" Description=="${tsDescription}" Scenario=="${selectedScenario}" &
+      ${tstoolExe} ${javaXmxOption} -- ${tstoolCommandFile} --space-replacement='___' TSID=="${tsid}" Description=="${tsDescription}" Scenario=="${selectedScenario}" &
       logInfo "${menuColor}Running TSTool in the background so that other tasks can be run.${endColor}"
       logInfo "${menuColor}TSTool messages may be written as it runs.${endColor}"
       logInfo "${menuColor}If necessary, press return to view the menu.${endColor}"
@@ -2512,7 +2697,7 @@ viewCompDifferenceHeatmap() {
       return 0
     else
       logInfo "${menuColor}Running TSTool before continuing.${endColor}"
-      ${tstoolExe} -- ${tstoolCommandFile} --space-replacement='___' TSID=="${tsid}" Description=="${tsDescription}" Scenario=="${selectedScenario}"
+      ${tstoolExe} ${javaXmxOption} -- ${tstoolCommandFile} --space-replacement='___' TSID=="${tsid}" Description=="${tsDescription}" Scenario=="${selectedScenario}"
       if [ $? -ne 0 ]; then
         logWarning ""
         logWarning "${warnColor}Error running TSTool.${endColor}"
@@ -2562,6 +2747,7 @@ logInfo "tstoolTemplatesFolder=${tstoolTemplatesFolder}"
 # - will be set to 'batch' if command is detected
 runMode="interactive"
 debug="false"
+javaXmx=""
 
 # Check the Linux distribution so have operating system.
 #checkLinuxDistro

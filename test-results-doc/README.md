@@ -5,14 +5,16 @@ This summary can be updated as the software moves forward.
 The comparisons that are listed have the most recent version at the top of this document.
 
 * [Approach](#approach)
-* [17.0.2-gfortran-win-64bit Compared to 17.0.0-gfortran-win-32bit](#1702-gfortran-win-64bit-compared-to-1702-gfortran-win-32bit)
+    + [TSTool Memory](#tstool-memory)
+* [17.0.2-gfortran-win-64bit Compared to 17.0.2-gfortran-win-32bit](#1702-gfortran-win-64bit-compared-to-1702-gfortran-win-32bit)
+* [17.0.2-gfortran-win-64bit Compared to 17.0.2-lahey-win-32bit](#1702-gfortran-win-64bit-compared-to-1702-lahey-win-32bit)
 
 ----------------
 
 ## Approach
 
 The approach for testing is generally to compare the current baseline version (the accepted version) with another version,
-for example the next version that will be released.
+for example the next version that will be released or a previous version.
 In some cases, the baseline is compared with an old version, such as comparing 17.0.0 with 16.00.47,
 in order to establish a documented history.
 
@@ -21,11 +23,21 @@ The testing framework was used to run each of the CDSS datasets and compare resu
 It is expected that as a new version is released,
 it will become the baseline to which newer versions are compared.
 
+Scenarios are listed below in the order that they are run.
+All indicated scenarios are run and then the comparison is run on each scenario.
+
+### TSTool Memory
+
+If TSTool runs out of memory, for example with `java.lang.OutOfMemoryError: Java heap space` error,
+use the `--java-xmx` option to the `statemod-test.bash` script.
+Now that TSTool is 64-bit, the value is only limited by computer memory,
+so if necessary close other applications, web browser tabs, etc. to free up memory.
+
 ## `17.0.2-gfortran-win-64bit` Compared to `17.0.2-gfortran-win-32bit`
 
 The `17.0.0-gfortran-win-64bit` executable was compared to the `17.0.2-gfortran-win-32bit` executable to confirm
 that no significant differences exist between 32-bit compiler and 64-bit compiler.
-This allows confirms that 64-bit architecture is OK for future StateMod work.
+This confirms that 64-bit architecture is OK for future StateMod work.
 The 32-bit version was compiled using an ***MSYS2 MinGW 32-Bit*** command shell and
 `make statemod_release` build.
 The `statemod-17.0.2-gfortran-win-32bit.exe` executable was copied into the
@@ -38,19 +50,53 @@ The number of time series impacts the run time.
 
 | **Dataset** | **Scenario** | **Total Time Series** | **Number of Time Series Different** | **Magnitude of Differences** | **Comments** | **Who** |
 | -- | -- | -- | -- | -- | -- | -- |
+| `cm2015_StateMod` | `cm2015H` | | | | | smalers |
+| `cm2015_StateMod` | `cm2015H2` | | | | | smalers |
+| `cm2015_StateMod` | `cm2015B` | | | | 32-bit and 64-bit executables stopped in Carrpl | smalers |
+| `gm2015_StateMod_modified` | `gm2015H` | 29754 | 430 | < 44500 | Differences are for `Control_Right` | smalers |
+| `gm2015_StateMod_modified` | `gm2015H2` | 29754 | 227 | < 44520 | Differences are for `Control_Right` | smalers |
+| `gm2015_StateMod_modified` | `gm2015B` | 29754 | 487 | < 44400 | Differences are for `Control_Right` | smalers |
+| `NP2018_StateMod_modified` | `NP2018H` | 21579 | 141 | < 3750 | Differences are for `Control_Right` | smalers |
+| `NP2018_StateMod_modified` | `NP2018B` | 21579 | 382 | < 6705 | Differences are for `Control_Right` | smalers |
+| `sj2015_StateMod_modified` | `sj2015H1` | 23894 | 103 | Most are < 720, maximum is 25394 | Differences are for `Control_Right` | smalers |
+| `sj2015_StateMod_modified` | `sj2015H2` | 23894 | 86 | Most are < 1600, maximum is 15310 | Differences are for `Control_Right` | smalers |
+| `sj2015_StateMod_modified` | `sj2015B` | 23894 | 155 | Most are < 1600, maximum is 14942 | Differences are for `Control_Right` | smalers |
+| `SP2016_StateMod_modified` | `SP2016H` | | | | **Does not run - [see issue](https://github.com/OpenCDSS/cdss-app-statemod-fortran/issues/73)** | smalers |
+| `wm2015_StateMod_modified` | `wm2015H` | 7399 | 3 | < 370 | Differences are for `Control_Right` for 3 ditches and 5 MSF. | smalers |
+| `wm2015_StateMod_modified` | `wm2015B` | 7399 | 34 | < 5050 | Differences are for `Control_Right` | smalers |
+| `ym2015_StateMod_modified` | `ym2015H` | 19815 | 86 | Most are < 2500, one is 27362. | Differences are for `Control_Right` | smalers |
+| `ym2015_StateMod_modified` | `ym2015H2` | 19815 | 86 | Most are < 2500, one is 9284. | Differences are for `Control_Right` | smalers |
+| `ym2015_StateMod_modified` | `ym2015B` | 19815 | 136 | < 24300  | Differences are for `Control_Right` | smalers |
 
+## `17.0.2-gfortran-win-64bit` Compared to `17.0.2-lahey-win-32bit`
 
-| `cm2015_StateMod` | `cm2015` | 18864 | 173 | < 150 | | smalers |
-| `cm2015_StateMod` | `cm2015B` | 18864 | 103 | < 90 | | smalers |
-| `gm2015_StateMod_modified` | `gm2015` | 13200? | | | No BD1 file created for version 14. | smalers |
-| `gm2015_StateMod_modified` | `gm2015B` | 13200? | | | No BD1 file created for version 14. | smalers |
-| `NP2018_StateMod_modified` | `NP2018` | 10080 | 0 | | | smalers |
-| `NP2018_StateMod_modified` | `NP2018B` | 10080 | 0 | | | smalers |
-| `sj2015_StateMod_modified` | `sj2015` | 14976 | 201 | < 70 | | smalers |
-| `sj2015_StateMod_modified` | `sj2015B` | | | | TSTool has error reading BD1 file.  File seems small.  Corrupt format? | smalers |
-| `SP2016_StateMod_modified` | `SP2016` | 26784 | 104 | < 11000 | `0100503_I River Diversion` is largest | smalers |
-| `SP2016_StateMod_modified` | `SP2016_Restricted` | 26784 | 1201 | < 11000 | `0100503_I River Diversion` is largest | smalers |
-| `wm2015_StateMod_modified` | `wm2015` | 6720 | 18 | < 3 | | smalers |
-| `wm2015_StateMod_modified` | `wm2015B` | 6720 | 0 | | | | smalers |
-| `ym2015_StateMod_modified` | `ym2015` | 14688| 35 | < 7 | | smalers |
-| `ym2015_StateMod_modified` | `ym2015B` | | | | No BD1 file created for version 14. | smalers |
+The `17.0.0-gfortran-win-64bit` executable was compared to the `17.0.2-lahey-win-32bit` executable to confirm
+that no significant differences exist between  Lahey and gfortran compiler executables.
+This confirms that the `gfortran` compiler is OK for future StateMod work.
+The `statemod-17.0.2-lahey-win-32bit.exe` executable was provided by Ray Bennett and copied into the
+`downloads/executables/statemod-cdss-17.0.2` folder for use with the testing framework.
+
+Tolerances of 2, 10, 100, and 1000 were used to categorize differences.
+If the "Number of Time Series Different" is zero,
+It means that the absolute value of all differences was < 2.
+The number of time series impacts the run time.
+
+| **Dataset** | **Scenario** | **Total Time Series** | **Number of Time Series Different** | **Magnitude of Differences** | **Comments** | **Who** |
+| -- | -- | -- | -- | -- | -- | -- |
+| `cm2015_StateMod` | `cm2015H` | | | | | smalers |
+| `cm2015_StateMod` | `cm2015H2` | | | | | smalers |
+| `cm2015_StateMod` | `cm2015B` | | | | The 64-bit executable and Lahey executable stopped in Carrpl | smalers |
+| `gm2015_StateMod_modified` | `gm2015H` | 29754 | 459 | < 30560 | Differences are for `Control_Right` | smalers |
+| `gm2015_StateMod_modified` | `gm2015H2` | 29754 | 238 | < 44520 | Differences are for `Control_Right` | smalers |
+| `gm2015_StateMod_modified` | `gm2015B` | 29754 | 480 | < 44400 | Differences are for `Control_Right` | smalers |
+| `NP2018_StateMod_modified` | `NP2018H` | 21579 | 124 | < 3750 | Differences are for `Control_Right` | smalers |
+| `NP2018_StateMod_modified` | `NP2018B` | 21579 | 380 | < 9640 | Differences are for `Control_Right` | smalers |
+| `sj2015_StateMod_modified` | `sj2015H1` | 23894 | 111 | Most are < 1600, maximum is 35395| Differences are for `Control_Right` | smalers |
+| `sj2015_StateMod_modified` | `sj2015H2` | 23894 | 107 | Most are < 1600, maximum is 15310 | Differences are for `Control_Right` | smalers |
+| `sj2015_StateMod_modified` | `sj2015B` | 23894 | 153 | Most are < 1600, maximum is 14942 | Differences are for `Control_Right` | smalers |
+| `SP2016_StateMod_modified` | `SP2016H` | | | | **Does not run - [see issue](https://github.com/OpenCDSS/cdss-app-statemod-fortran/issues/73)** | smalers |
+| `wm2015_StateMod_modified` | `wm2015H` | 7399 | 3 | < 370 | Differences are for `Control_Right` | smalers |
+| `wm2015_StateMod_modified` | `wm2015B` | 7399 | 35 | < 5050 | Differences are for `Control_Right` | smalers |
+| `ym2015_StateMod_modified` | `ym2015H` | 19815 | 115 | < 2500, one is 27362. | Differences are for `Control_Right` | smalers |
+| `ym2015_StateMod_modified` | `ym2015H2` | 19815 | 89 | Most are < 2900 , one is 18508. | Differences are for `Control_Right` | smalers |
+| `ym2015_StateMod_modified` | `ym2015B` | 19815 | 133 | < 24300 | Differences are for `Control_Right` | smalers |
