@@ -5,21 +5,25 @@ See the [OpenCDSS StateMod software web page](https://opencdss.state.co.us/openc
 for more information.
 
 * [Background](#background)
-* [Test Results Documentation](test-results-doc/README.md) - separate file with summary of test results
+* Test Implementations and Results (links to other documents):
+    + [Dataset Test Results Documentation](test-results-doc/README.md) - separate file with summary of test results
+    + [Legacy Example Test List](test/examples/README.md) - list of legacy examples that have been added as tests
 * [Repository Contents](#repository-contents)
 * [Getting Started](#getting-started)
-  1. [Set up StateMod Development Environment](#set-up-statemod-development-environment)
-  2. [Clone Repository](#clone-repository)
-  3. [Install TSTool](#install-tstool)
-  4. [`statemod-test.bash` Script](#statemod-testbash-script)
-* [Testing Quick Checklist](#testing-quick-checklist)
-* [Overview of the Testing Process](#overview-of-the-testing-process)
-  1. [Download Files and Install Datasets and Executables](#download-files-and-install-datasets-and-executables)
-  2. [Create New Test Dataset Variant](#create-new-test-dataset-variant)
-  3. [Run StateMod to Generate Output](#run-statemod-to-generate-output)
-  4. [Create a Comparison](#create-a-comparison)
-  5. [Run a Comparison and Visualize Results](#run-a-comparison-and-visualize-results)
-* [Future Enhancements](#future-enhancements)
+    1. [Set up StateMod Development Environment](#set-up-statemod-development-environment)
+    2. [Clone Repository](#clone-repository)
+    3. [Install TSTool](#install-tstool)
+    4. [`statemod-test.bash` Script](#statemod-testbash-script)
+* [Dataset Testing](#dataset-testing)
+    + [Dataset Testing Quick Checklist](#dataset-testing-quick-checklist)
+    + [Overview of the Dataset Testing Process](#overview-of-the-dataset-testing-process)
+        1. [Download Files and Install Datasets and Executables](#download-files-and-install-datasets-and-executables)
+        2. [Create New Test Dataset Variant](#create-new-test-dataset-variant)
+        3. [Run StateMod to Generate Output](#run-statemod-to-generate-output)
+        4. [Create a Comparison](#create-a-comparison)
+        5. [Run a Comparison and Visualize Results](#run-a-comparison-and-visualize-results)
+    + [Future Dataset Testing Enhancements](#future-dataset-testing-enhancements)
+* [Small Examples Testing](#small-examples-testing)
 * [Release Notes](#release-notes)
 
 -----------------
@@ -102,6 +106,9 @@ cdss-app-statemod-fortran-test/                StateMod tests (this repository).
           statemod-17.0.2gfortran-win-32bit/   Another executable dataset copy.
             StateMod/
               see above
+    examples/                                  Tests using based on legacy examples.
+      ex*/                                     Folders for separate example tests.
+    examples-suite/                            Test suite for 'examples'.
   test-results-doc/                            Test results documentation.
     README.md                                  Manually-created summary of testing results.
   tstool-templates/                            TSTool command file templates.
@@ -166,9 +173,13 @@ To run the script, `cd` to the repository's `scripts` folder and then run:
 The script will present an interactive menu to execute testing tasks,
 as described in the sections below.
 
-## Testing Quick Checklist
+## Dataset Testing
 
-The next section [Overview of the Testing Process](#overview-of-the-testing-process) provides an overview of the testing process.
+This section describes how to test StateMod using full datasets.
+
+### Dataset Testing Quick Checklist
+
+The next section [Overview of the Dataset Testing Process](#overview-of-the-dataset-testing-process) provides an overview of the testing process.
 The following checklist is an abbreviated list of typical testing workflow.
 Long commands are shown but the shorter equivalent can be used in the `statemod-test` menu.
 
@@ -193,9 +204,9 @@ An interactive menu provides commands to help with testing.
 
 Repeat steps as necessary based on changes to datasets and executables.
 
-## Overview of the Testing Process
+### Overview of the Dataset Testing Process
 
-The following sections describe the overall testing process.
+The following sections describe the overall dataset testing process.
 The following terminology is used throughout the repository,
 listed in order that drills down into the testing process.
 
@@ -261,7 +272,7 @@ For example, during active software development,
 a new executable can be copied into dataset variant folder's `StateMod` folder
 rather than recreating the entire dataset unzip process.
 
-### Download Files and Install Datasets and Executables
+#### Download Files and Install Datasets and Executables
 
 **Execute this step when new versions of datasets and executables are available.**
 
@@ -282,7 +293,7 @@ The dataset files are then available to copy into folders for an executable,
 to run for testing.
 The `0-dataset` files should not be modified.
 
-### Create New Test Dataset Variant
+#### Create New Test Dataset Variant
 
 **Execute this step when a new executable comparison is necessary.**
 
@@ -301,7 +312,7 @@ The selected executable is copied to the dataset `StateMod` folder.
 A separate folder is necessary for each variant to fully isolate the dataset from another executable.
 This ensures that there is no mixing of test results.
 
-### Run StateMod to Generate Output
+#### Run StateMod to Generate Output
 
 **Execute this step when a new dataset or StateMod executable has been installed.**
 
@@ -311,7 +322,7 @@ The StateMod executable in the test dataset is run using one of the following me
 2. To run from the command line, change to the `StateMod` folder in a command line window.
 Run the executable in the folder as per normal StateMod conventions.
 
-### Create a Comparison
+#### Create a Comparison
 
 **Execute this step to create a new comparison, for example when new executable is available.**
 
@@ -326,7 +337,7 @@ Note that a tilde character (`~`) is used to separate the executable names.
 TSTool command files are used to compare the binary output files,
 which form the bulk of the results.
 
-### Run a Comparison and Visualize Results
+#### Run a Comparison and Visualize Results
 
 **Execute this step frequently to (re)create comparison and review results.
 For example, this can be run during development to evaluate how changes in software are impacting simulations.**
@@ -337,7 +348,7 @@ Output text files can be used to review the frequency and magnitude of differenc
 Use the `vheatmap` command to view the differences for a specific time series as a heatmap.
 The TSTool graph allows interactively reviewing the date and magnitude of differences.
 
-## Future Enhancements
+### Future Dataset Testing Enhancements
 
 Initial implementation of the testing framework has focused on implementing a structured process for testing
 and establishing conventions for consistency.
@@ -346,6 +357,13 @@ the process does currently require some interactive tasks and review
 using the `test-statemod.bash` script.
 The existing testing framework features can be leverated to increase automation.
 
+## Small Examples Testing
+
+In addition to tests that use full datasets,
+small tests are implemented using examples.  See the
+[Developer Documentation Testing](https://opencdss.state.co.us/tstool/latest/doc-dev/dev-tasks/testing/testing/)
+documentation for details.
+
 ## Release Notes
 
 The following are release notes for the StateMod testing framework,
@@ -353,4 +371,5 @@ which mainly involves changes to the `statemod-test.bash` script.
 
 | **Version** | **Release Notes** |
 | -- | -- |
+| 1.1.0 | Add small (example) tests using TSTool. |
 | 1.0.0 | Initial version of testing framework. |

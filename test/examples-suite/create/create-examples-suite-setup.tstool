@@ -1,0 +1,4 @@
+# Command file to set up the environment and database connections for the examples test suite.
+# This command file should be read in at the start of the test suite
+# and then the remaining tests can share these connections
+CreateFolder(Folder="results",IfFolderExists=Ignore)
