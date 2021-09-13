@@ -8,5 +8,36 @@ StartLog(LogFile="results/ts-diff.tstool.log")
 #SetProperty(PropertyName="TSID",PropertyType=String,PropertyValue="Diff_TOTAL.StateCU.Potential Crop ET.Month")
 #SetProperty(PropertyName="Scenario",PropertyType=String,PropertyValue="cm2015")
 #SetProperty(PropertyName="Description",PropertyType=String,PropertyValue="cm2015 Total")
-ReadTimeSeries(TSID="Diff_${TSID}~DateValue~results/${Scenario}-ts-diff.dv",Alias="%L-%T-%I",IfNotFound=Warn)
+#--- Start old approach
+# Old code just read a saved file.
+#ReadTimeSeries(TSID="Diff_${TSID}~DateValue~results/${Scenario}-ts-diff.dv",Alias="%L-%T-%I",IfNotFound=Warn)
+#ProcessRasterGraph(TSProductFile="ts-diff.tsp")
+#--- End old approach
+#
+# Need to reprocess the difference consistent with 'compare-statemod-runs'
+# because of the potential that huge DateValue files could be created.
+# Read the single time series matching the requested TSAlias pattern:
+# - try reading b42 (well), b43 (diversion and stream), b44 (reservoir) for monthly
+# - use the alias to help with uniqueness because b43 and b44 time series may not otherwise be unique
+# - TODO smalers 2021-09-09 need to add daily
+ReadStateModB(InputFile="${Dataset1Folder}/${Scenario}.b43",TSID="${TSID}",Alias="b43-%L-%T")
+ReadStateModB(InputFile="${Dataset2Folder}/${Scenario}.b43",TSID="${TSID}",Alias="b43-%L-%T")
+ReadStateModB(InputFile="${Dataset1Folder}/${Scenario}.b44",TSID="${TSID}",Alias="b44-%L-%T")
+ReadStateModB(InputFile="${Dataset2Folder}/${Scenario}.b44",TSID="${TSID}",Alias="b44-%L-%T")
+# Ignore well files if don't exist since only used in some datasets.
+ReadStateModB(InputFile="${Dataset1Folder}/${Scenario}.b42",TSID="${TSID}",Alias="b42-%L-%T",IfFileNotFound="Ignore")
+ReadStateModB(InputFile="${Dataset2Folder}/${Scenario}.b42",TSID="${TSID}",Alias="b42-%L-%T",IfFileNotFound="Ignore")
+#
+# Free all time series except the matching alias.
+DeselectTimeSeries(TSList=AllMatchingTSID,TSID="${TSAlias}",SelectAllFirst=True)
+Free(TSList=SelectedTS)
+#
+# Compare time series with matching time series identifiers:
+# - smallest value of 2 allows for sufficient roundoff
+# - only create difference time series based on smallest criteria
+# - don't create output files or set property since only doing a graph
+CreateFolder(Folder="results",IfFolderExists=Ignore)
+CompareTimeSeries(MatchLocation=False,MatchDataType=False,Tolerance="2,10,100,1000",CreateDiffTS=IfDifferent,IfDifferent=Warn)
+#
+# Process the graph.
 ProcessRasterGraph(TSProductFile="ts-diff.tsp")
