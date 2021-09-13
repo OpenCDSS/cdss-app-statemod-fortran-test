@@ -44,8 +44,8 @@ CompareTimeSeries(MatchLocation=False,MatchDataType=False,MatchAlias=True,Tolera
 RunProgram(CommandLine="${StateModExecutable} ${WorkingDir}\ex0001.rsp -report -xwr",UseCommandShell=False,Timeout=60,IfNonZeroExitCode="Fail",StdoutFile="results/test-ex0001-stdout.log")
 RunProgram(CommandLine="${StateModExecutable} ${WorkingDir}\ex0001.rsp -report -xwb",UseCommandShell=False,Timeout=60,IfNonZeroExitCode="Fail",StdoutFile="results/test-ex0001-stdout.log")
 # Uncomment the following 2 commands to save expected results.
-CopyFile(InputFile="ex0001.xwb",OutputFile="expected-results/report/ex0001.xwb")
-CopyFile(InputFile="ex0001.xwr",OutputFile="expected-results/report/ex0001.xwr")
+# CopyFile(InputFile="ex0001.xwb",OutputFile="expected-results/report/ex0001.xwb")
+# CopyFile(InputFile="ex0001.xwr",OutputFile="expected-results/report/ex0001.xwr")
 # Compare the results.
 CompareFiles(InputFile1="expected-results/report/ex0001.xwr",InputFile2="ex0001.xwr",IfDifferent=Warn)
 CompareFiles(InputFile1="expected-results/report/ex0001.xwb",InputFile2="ex0001.xwb",IfDifferent=Warn)

@@ -1,0 +1,51 @@
+StartLog(LogFile="results/test-ex0002.tstool.log")
+# ex0002 - Demonstrates a simple 8 node network, with a reservoir.
+# Remove old results to make sure results are new.
+CreateFolder(Folder="results/sim",CreateParentFolders=True,IfFolderExists=Ignore)
+RemoveFile(InputFile="ex0002.b43",IfNotFound=Ignore)
+RemoveFile(InputFile="ex0002.b44",IfNotFound=Ignore)
+#========================= Test: -check
+# Test check mode:
+# - run the check
+# - search the check file for patterns indicating an issue, such s 'Unknown'
+RunProgram(CommandLine="${StateModExecutable} ${WorkingDir}\ex0002.rsp -check",UseCommandShell=False,Timeout=60,IfNonZeroExitCode="Fail",StdoutFile="results/test-ex0002-stdout.log")
+CheckFile(InputFile="ex0002.chk",Statistic="PatternMatchLineCount",SearchPattern="*Unknown*",CheckCriteria=">",CheckValue1=0,IfCriteriaMet=Warn)
+#========================= Test: -base
+# Test baseflow generation:
+# - run baseflow mode
+# - compare the output with previous run saved as expected results, using StateMod time series file format
+RunProgram(CommandLine="${StateModExecutable} ${WorkingDir}\ex0002.rsp -base",UseCommandShell=False,Timeout=60,IfNonZeroExitCode="Fail",StdoutFile="results/test-ex0002-stdout.log")
+# Uncomment the following 2 commands to save expected results.
+# CopyFile(InputFile="ex0002.xbm",OutputFile="expected-results/base/ex0002.xbm")
+# CopyFile(InputFile="ex0002.xbg",OutputFile="expected-results/base/ex0002.xbg")
+# Compare the results.
+CompareFiles(InputFile1="expected-results/base/ex0002.xbm",InputFile2="ex0002.xbm",IfDifferent=Warn)
+CompareFiles(InputFile1="expected-results/base/ex0002.xbg",InputFile2="ex0002.xbg",IfDifferent=Warn)
+#========================= Test: -sim
+# Test simulation:
+# - run simulation mode
+# - compare the output with previous run saved as expected results, using binary file time series
+RunProgram(CommandLine="${StateModExecutable} ${WorkingDir}\ex0002.rsp -sim",UseCommandShell=False,Timeout=60,IfNonZeroExitCode="Fail",StdoutFile="results/test-ex0002-stdout.log")
+# Uncomment the following 2 commands to save expected results.
+# CopyFile(InputFile="ex0002.b43",OutputFile="expected-results/sim/ex0002.b43")
+# CopyFile(InputFile="ex0002.b44",OutputFile="expected-results/sim/ex0002.b44")
+ReadStateModB(InputFile="expected-results/sim/ex0002.b43",Alias="b43-%L-%T")
+ReadStateModB(InputFile="expected-results/sim/ex0002.b44",Alias="b44-%L-%T")
+ReadStateModB(InputFile="ex0002.b43",Alias="b43-%L-%T")
+ReadStateModB(InputFile="ex0002.b44",Alias="b44-%L-%T")
+# Compare the results.
+CompareTimeSeries(MatchLocation=False,MatchDataType=False,MatchAlias=True,Tolerance="2,10,100,1000",CreateDiffTS=IfDifferent,DifferenceFile="results/sim/allts-difference.txt",SummaryFile="results/sim/summary-difference.txt",IfDifferent=Warn)
+#========================= Test: -report
+# Test reports:
+# - run report mode
+# - compare the output with previous run saved as expected results, using text file comparison
+# - this approach is fragile because even minor changes in formatting can result in differences
+# - it may be necessary to save multiple expected results for different versions
+RunProgram(CommandLine="${StateModExecutable} ${WorkingDir}\ex0002.rsp -report -xwr",UseCommandShell=False,Timeout=60,IfNonZeroExitCode="Fail",StdoutFile="results/test-ex0002-stdout.log")
+RunProgram(CommandLine="${StateModExecutable} ${WorkingDir}\ex0002.rsp -report -xwb",UseCommandShell=False,Timeout=60,IfNonZeroExitCode="Fail",StdoutFile="results/test-ex0002-stdout.log")
+# Uncomment the following 2 commands to save expected results.
+# CopyFile(InputFile="ex0002.xwb",OutputFile="expected-results/report/ex0002.xwb")
+# CopyFile(InputFile="ex0002.xwr",OutputFile="expected-results/report/ex0002.xwr")
+# Compare the results.
+CompareFiles(InputFile1="expected-results/report/ex0002.xwr",InputFile2="ex0002.xwr",IfDifferent=Warn)
+CompareFiles(InputFile1="expected-results/report/ex0002.xwb",InputFile2="ex0002.xwb",IfDifferent=Warn)
