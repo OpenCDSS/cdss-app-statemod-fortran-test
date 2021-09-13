@@ -7,12 +7,12 @@
 [Product]
 
 ProductType = "Graph"
-TotalWidth = "550"
+TotalWidth = "650"
 TotalHeight = "800"
 MainTitleString = "${TSAlias} - ${Description}"
 MainTitleFontSize = "18"
 MainTitleFontStyle = "Bold"
-SubTitleString = "Difference between matching time series"
+SubTitleString = "${Variant2} minus ${Variant1}"
 SubTitleFontSize = "14"
 
 [SubProduct 1]

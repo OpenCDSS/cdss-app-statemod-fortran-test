@@ -33,7 +33,7 @@ ReadStateModB(InputFile="${Dataset2Folder}/${Scenario}.b42",TSID="${TSIDPattern}
 # - only create difference time series based on smallest criteria
 # - TODO smalers 2021-08-18 maybe need a way to compare based on significant digits
 CreateFolder(Folder="results",IfFolderExists=Ignore)
-CompareTimeSeries(MatchLocation=False,MatchDataType=False,MatchAlias=True,Tolerance="2,10,100,1000",CreateDiffTS=IfDifferent,DifferenceFile="results/${Scenario}-allts-differences.txt",SummaryFile="results/${Scenario}-summary-differences.txt",TableID="CompTable",DiffCountProperty="CompDiffCount",IfDifferent=Warn)
+CompareTimeSeries(MatchLocation=False,MatchDataType=False,MatchAlias=True,Tolerance="2,10,100,1000,10000",CreateDiffTS=IfDifferent,DifferenceFile="results/${Scenario}-allts-differences.txt",SummaryFile="results/${Scenario}-summary-differences.txt",TableID="CompTable",DiffCountProperty="CompDiffCount",IfDifferent=Warn)
 SetProperty(PropertyName="RunEndTime",PropertyType=DateTime,PropertyValue="CurrentToSecond")
 #
 # Save the difference time series data to a file:
