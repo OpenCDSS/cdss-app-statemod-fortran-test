@@ -37,6 +37,12 @@
 #   only ignore in test results folder below
 /test/examples/**/results/**
 
+# Examples test suite:
+# - ignore dynamic files used with TSTool to create and run tests
+/test/examples-suite/create/results/*
+/test/examples-suite/run/results/*
+/test/examples-suite/run/run-examples-suite.tstool
+
 # Ignore temporary files from utility programs.
 SmNewRsp.out
 SmNewRsp.log

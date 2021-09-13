@@ -1,0 +1,9 @@
+# Command file to finish the automated tests:
+# - write the summary table to CSV and Excel files
+# - specify a results folder in the location where the test suite will be run
+WriteTableToDelimitedFile(TableID="TestResults",OutputFile="results/run-examples-suite-out.csv",WriteHeaderComments=False)
+ReadTableFromDelimitedFile(TableID="StyleTable",InputFile="StyleTable.csv")
+ReadTableFromDelimitedFile(TableID="ConditionTable",InputFile="ConditionTable.csv")
+NewExcelWorkbook(OutputFile="results/run-examples-suite-out.xlsx",Worksheets="TestResults",KeepOpen=True)
+SetExcelWorksheetViewProperties(OutputFile="results/run-examples-suite-out.xlsx",Worksheet="TestResults",KeepOpen=True,FreezePaneRowBelowSplit=2)
+WriteTableToExcel(TableID="TestResults",OutputFile="results/run-examples-suite-out.xlsx",Worksheet="TestResults",ExcelAddress="A1",ExcelColumnNames=FirstRowInRange,ColumnWidths="Default:Auto",ConditionTableID="ConditionTable",StyleTableID="StyleTable")
