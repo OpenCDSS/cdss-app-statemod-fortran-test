@@ -1,0 +1,30 @@
+# _______________________________________________________
+#
+# ex0002
+# _______________________________________________________
+#
+# StateMod Response File
+#
+# Type                                    Name
+# ______________________________________  ________________________________________________________________________
+Control                                 = ex0002.ctl
+River_Network                           = ex0002.rin
+Reservoir_Station                       = ex0002.res
+Diversion_Station                       = ex0002.dds
+StreamGage_Station                      = ex0002.ris
+Instreamflow_Station                    = ex0002.ifs
+Instreamflow_Right                      = ex0002.ifr
+Reservoir_Right                         = ex0002.rer
+Diversion_Right                         = ex0002.ddr
+Operational_Right                       = ex0002.opr
+Evaporation_Monthly                     = ex0002.eva
+Stream_Base_Monthly                     = ex0002.rim
+Diversion_Demand_Monthly                = ex0002.ddm
+Instreamflow_Demand_AverageMonthly      = ex0002.ifa
+Reservoir_Target_Monthly                = ex0002.tar
+Reservoir_Historic_Monthly              = ex0002.eom
+StreamGage_Historic_Monthly             = ex0002.rih
+Diversion_Historic_Monthly              = ex0002.ddh
+GeographicInformation                   = ex0002.gis
+OutputRequest                           = ex0002.out
+DelayTable_Monthly                      = ex0002.dly

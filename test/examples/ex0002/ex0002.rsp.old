@@ -1,0 +1,35 @@
+# _______________________________________________________
+#
+#        SmNewRsp (create a new, variable format StateMod
+#                response file from an old format)
+#        State of Colorado
+#        Version:  1.10
+#        Last revision date: 2005/01/10
+#
+# _______________________________________________________
+#
+# StateMod Response File
+#
+# Type                                    Name
+# ______________________________________  ________________________________________________________________________
+Control                                 = ex2.ctl                                                                                                                                                                                                               
+River_Network                           = ex2.rin                                                                                                                                                                                                               
+Reservoir_Station                       = ex2.res                                                                                                                                                                                                               
+Diversion_Station                       = ex2.dds                                                                                                                                                                                                               
+StreamGage_Station                      = ex2.ris                                                                                                                                                                                                               
+Instreamflow_Station                    = ex2.ifs                                                                                                                                                                                                               
+Instreamflow_Right                      = ex2.ifr                                                                                                                                                                                                               
+Reservoir_Right                         = ex2.rer                                                                                                                                                                                                               
+Diversion_Right                         = ex2.ddr                                                                                                                                                                                                               
+Operational_Right                       = ex2.opr                                                                                                                                                                                                               
+Evaporation_Monthly                     = ex2.eva                                                                                                                                                                                                               
+Stream_Base_Monthly                     = ex2.rim                                                                                                                                                                                                               
+Diversion_Demand_Monthly                = ex2.ddm                                                                                                                                                                                                               
+Instreamflow_Demand_AverageMonthly      = ex2.ifa                                                                                                                                                                                                               
+Reservoir_Target_Monthly                = ex2.tar                                                                                                                                                                                                               
+Reservoir_Historic_Monthly              = ex2.eom                                                                                                                                                                                                               
+StreamGage_Historic_Monthly             = ex2.rih                                                                                                                                                                                                               
+Diversion_Historic_Monthly              = ex2.ddh                                                                                                                                                                                                               
+GeographicInformation                   = ex2.gis                                                                                                                                                                                                               
+OutputRequest                           = ex2.out  
+DelayTable_Monthly                      = ex2.dly                                                                                                                                                                                                                
