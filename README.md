@@ -371,5 +371,6 @@ which mainly involves changes to the `statemod-test.bash` script.
 
 | **Version** | **Release Notes** |
 | -- | -- |
+| 1.2.1 | Change so heatmap recomputes difference and add 10000 as maximum tolerance for comparison. |
 | 1.1.0 | Add small (example) tests using TSTool. |
 | 1.0.0 | Initial version of testing framework. |

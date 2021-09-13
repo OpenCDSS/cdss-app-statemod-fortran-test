@@ -37,7 +37,7 @@ Free(TSList=SelectedTS)
 # - only create difference time series based on smallest criteria
 # - don't create output files or set property since only doing a graph
 CreateFolder(Folder="results",IfFolderExists=Ignore)
-CompareTimeSeries(MatchLocation=False,MatchDataType=False,Tolerance="2,10,100,1000",CreateDiffTS=IfDifferent,IfDifferent=Warn)
+CompareTimeSeries(MatchLocation=False,MatchDataType=False,Tolerance="2,10,100,1000,10000",CreateDiffTS=IfDifferent,IfDifferent=Warn)
 #
 # Process the graph.
 ProcessRasterGraph(TSProductFile="ts-diff.tsp")

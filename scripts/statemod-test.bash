@@ -1170,7 +1170,7 @@ newTestDatasetComp() {
     logText ""
     logText "Two dataset variants need to be selected for a comparison."
     logText "${menuColor}Select each number separately${endColor} by responding to two prompts."
-    logText "Typically the baseline variant is selected first."
+    logText "Typically the OLDEST variant is selected FIRST because the comparison is variant2 - variant1."
     read -p "Select a dataset variant (#/q/ ): " selectedDatasetNumber
     if [ "${selectedDatasetNumber}" = "q" -o "${selectedDatasetNumber}" = "Q" ]; then
       exit 0
@@ -2829,22 +2829,29 @@ viewCompDifferenceHeatmap() {
       print $3
     }' | sed 's/ /___/g')
 
+    # The variants are used in the output subtitle.
+    selectedVariant1=$(echo ${selectedComp} | cut -d '/' -f 3 | cut -d '~' -f 1)
+    selectedVariant2=$(echo ${selectedComp} | cut -d '/' -f 3 | cut -d '~' -f 2)
+
     logInfo "TSTool command line includes:  Dataset1Folder==${datasetStatemodFolder1}"
     logInfo "TSTool command line includes:  Dataset2Folder==${datasetStatemodFolder2}"
     logInfo "TSTool command line includes:  Scenario==${selectedScenario}"
+    logInfo "TSTool command line includes:  Variant1==${selectedVariant1}"
+    logInfo "TSTool command line includes:  Variant2==${selectedVariant2}"
     logInfo "TSTool command line includes:  Description==${tsDescription}"
     logInfo "TSTool command line includes:  TSID==${tsid}"
     logInfo "TSTool command line includes:  TSAlias==${tsalias}"
 
-    # Make sure the difference time series data file exists.
-    diffDataFile="${testCompFolder}/results/${selectedScenario}-ts-diff.dv"
-    if [ ! -f "${diffDataFile}" ]; then
-      logWarning ""
-      logWarning "${warnColor}Comparison difference data file does not exist:${endColor}"
-      logWarning "${warnColor}  ${diffDataFile}${endColor}"
-      logWarning "${warnColor}Make sure to run the comparison before trying to visualize results.${endColor}"
-      return 1
-    fi
+    # Make sure the difference time series data file exists:
+    # - this is used with the old approach
+    #diffDataFile="${testCompFolder}/results/${selectedScenario}-ts-diff.dv"
+    #if [ ! -f "${diffDataFile}" ]; then
+    #  logWarning ""
+    #  logWarning "${warnColor}Comparison difference data file does not exist:${endColor}"
+    #  logWarning "${warnColor}  ${diffDataFile}${endColor}"
+    #  logWarning "${warnColor}Make sure to run the comparison before trying to visualize results.${endColor}"
+    #  return 1
+    #fi
 
     # Run TSTool.
 
@@ -2881,8 +2888,8 @@ viewCompDifferenceHeatmap() {
 
     doBackground="true"
     if [ "${doBackground}" = "true" ]; then
-      logInfo "Running: ${tstoolExe} ${javaXmxOption} -- ${tstoolCommandFile} --space-replacement='___' TSAlias==\"${tsalias}\" TSID==\"${tsid}\" Dataset1Folder==\"${datasetStatemodFolder1}\" Dataset2Folder==\"${datasetStatemodFolder2}\" Description==\"${tsDescription}\" Scenario==\"${selectedScenario}\""
-      ${tstoolExe} ${javaXmxOption} -- ${tstoolCommandFile} --space-replacement='___' TSAlias=="${tsalias}" TSID=="${tsid}" Dataset1Folder=="${datasetStatemodFolder1}" Dataset2Folder=="${datasetStatemodFolder2}" Description=="${tsDescription}" Scenario=="${selectedScenario}" &
+      logInfo "Running: ${tstoolExe} ${javaXmxOption} -- ${tstoolCommandFile} --space-replacement='___' TSAlias==\"${tsalias}\" TSID==\"${tsid}\" Variant1==\"${selectedVariant1}\" Variant2==\"${selectedVariant2}\" Dataset1Folder==\"${datasetStatemodFolder1}\" Dataset2Folder==\"${datasetStatemodFolder2}\" Description==\"${tsDescription}\" Scenario==\"${selectedScenario}\""
+      ${tstoolExe} ${javaXmxOption} -- ${tstoolCommandFile} --space-replacement='___' TSAlias=="${tsalias}" TSID=="${tsid}" Variant1=="${selectedVariant1}" Variant2=="${selectedVariant2}" Dataset1Folder=="${datasetStatemodFolder1}" Dataset2Folder=="${datasetStatemodFolder2}" Description=="${tsDescription}" Scenario=="${selectedScenario}" &
       logInfo "${menuColor}Running TSTool in the background so that other tasks can be run.${endColor}"
       logInfo "${menuColor}TSTool messages may be written as it runs.${endColor}"
       logInfo "${menuColor}If necessary, press return to view the menu.${endColor}"
@@ -2892,8 +2899,8 @@ viewCompDifferenceHeatmap() {
       return 0
     else
       logInfo "${menuColor}Running TSTool before continuing.${endColor}"
-      logInfo "${tstoolExe} ${javaXmxOption} -- ${tstoolCommandFile} --space-replacement='___' TSAlias==\"${tsalias}\" TSID==\"${tsid}\" Dataset1Folder==\"${datasetStatemodFolder1}\" Dataset2Folder==\"${datasetStatemodFolder2}\" Description==\"${tsDescription}\" Scenario==\"${selectedScenario}\""
-      ${tstoolExe} ${javaXmxOption} -- ${tstoolCommandFile} --space-replacement='___' TSAlias=="${tsalias}" TSID=="${tsid}" Dataset1Folder=="${datasetStatemodFolder1}" Dataset2Folder=="${datasetStatemodFolder2}" Description=="${tsDescription}" Scenario=="${selectedScenario}"
+      logInfo "${tstoolExe} ${javaXmxOption} -- ${tstoolCommandFile} --space-replacement='___' TSAlias==\"${tsalias}\" TSID==\"${tsid}\" Variant1==\"${selectedVariant1}\" Variant2==\"${selectedVariant2}\" Dataset1Folder==\"${datasetStatemodFolder1}\" Dataset2Folder==\"${datasetStatemodFolder2}\" Description==\"${tsDescription}\" Scenario==\"${selectedScenario}\""
+      ${tstoolExe} ${javaXmxOption} -- ${tstoolCommandFile} --space-replacement='___' TSAlias=="${tsalias}" TSID=="${tsid}" Variant1=="${selectedVariant1}" Variant2=="${selectedVariant2}" Dataset1Folder=="${datasetStatemodFolder1}" Dataset2Folder=="${datasetStatemodFolder2}" Description=="${tsDescription}" Scenario=="${selectedScenario}"
       if [ $? -ne 0 ]; then
         logWarning ""
         logWarning "${warnColor}Error running TSTool.${endColor}"
@@ -2913,7 +2920,7 @@ scriptFolder=$(cd $(dirname "$0") && pwd)
 scriptName=$(basename $0)
 # The following works whether or not the script name has an extension.
 scriptNameNoExt=$(echo ${scriptName} | cut -d '.' -f 1)
-version="1.2.0 2021-09-13"
+version="1.2.1 2021-09-13"
 
 # Configure the echo command for colored output:
 # - do this up front because results are used in messages

@@ -62,14 +62,14 @@ The `statemod-17.0.2-gfortran-win-32bit.exe` executable was copied into the
 
 Tolerances of 2, 10, 100, and 1000 were used to categorize differences.
 If the "Number of Time Series Different" is zero,
-It means that the absolute value of all differences was < 2.
+it means that the absolute value of all differences was < 2.
 The number of time series impacts the run time.
 
 | **Dataset** | **Scenario** | **Total Time Series** | **Number of Time Series Different** | **Magnitude of Differences** | **Comments** | **Who** |
 | -- | -- | -- | -- | -- | -- | -- |
 | `cm2015_StateMod` | `cm2015H` | 33194 | 180 | < 48700 | Differences are for `Control_Right` | smalers |
 | `cm2015_StateMod` | `cm2015H2` | 33194 | 183 | < 48700 | Differences are for `Control_Right` | smalers |
-| `cm2015_StateMod` | `cm2015B` | 33194 | | | 32-bit and 64-bit executables stopped in Carrpl - [see issue](https://github.com/OpenCDSS/cdss-app-statemod-fortran/issues/74) | smalers |
+| `cm2015_StateMod` | `cm2015B` | 33194 | | | **The 32-bit and 64-bit executables stopped in Carrpl - [see issue](https://github.com/OpenCDSS/cdss-app-statemod-fortran/issues/74)** | smalers |
 | `gm2015_StateMod_modified` | `gm2015H` | 29754 | 430 | < 44500 | Differences are for `Control_Right` | smalers |
 | `gm2015_StateMod_modified` | `gm2015H2` | 29754 | 227 | < 44520 | Differences are for `Control_Right` | smalers |
 | `gm2015_StateMod_modified` | `gm2015B` | 29754 | 487 | < 44400 | Differences are for `Control_Right` | smalers |
@@ -99,14 +99,14 @@ The `statemod-17.0.2-lahey-win-32bit.exe` executable was provided by Ray Bennett
 
 Tolerances of 2, 10, 100, and 1000 were used to categorize differences.
 If the "Number of Time Series Different" is zero,
-It means that the absolute value of all differences was < 2.
+it means that the absolute value of all differences was < 2.
 The number of time series impacts the run time.
 
 | **Dataset** | **Scenario** | **Total Time Series** | **Number of Time Series Different** | **Magnitude of Differences** | **Comments** | **Who** |
 | -- | -- | -- | -- | -- | -- | -- |
 | `cm2015_StateMod` | `cm2015H` | 33194 | 175 | < 48700 | Differences are for `Control_Right` | smalers |
 | `cm2015_StateMod` | `cm2015H2` | 33194 | 173 | < 48700 | Differences are for `Control_Right` | smalers |
-| `cm2015_StateMod` | `cm2015B` | 33194 | | | The 64-bit executable and Lahey executable stopped in Carrpl - [see issue](https://github.com/OpenCDSS/cdss-app-statemod-fortran/issues/74) | smalers |
+| `cm2015_StateMod` | `cm2015B` | 33194 | | | **The 64-bit executable and Lahey executable stopped in Carrpl - [see issue](https://github.com/OpenCDSS/cdss-app-statemod-fortran/issues/74)** | smalers |
 | `gm2015_StateMod_modified` | `gm2015H` | 29754 | 459 | < 30560 | Differences are for `Control_Right` | smalers |
 | `gm2015_StateMod_modified` | `gm2015H2` | 29754 | 238 | < 44520 | Differences are for `Control_Right` | smalers |
 | `gm2015_StateMod_modified` | `gm2015B` | 29754 | 480 | < 44400 | Differences are for `Control_Right` | smalers |
@@ -124,23 +124,27 @@ The number of time series impacts the run time.
 
 ### `17.0.2-gfortran-win-64bit` Compared to `15.00.01-lahey-win-32bit`
 
-**Comparison Summary**:  TBD
+**Comparison Summary**:  Although the number of time series that are different is not a large percentage (roughly 10%),
+some of the differences are large and consistent.
+Additional review is needed to determine if the differences make sense given the large number of
+changes to the software between versions.
 
 The `17.0.2-gfortran-win-64bit` executable was compared to the `15.00.01-lahey-win-32bit` executable to understand
-the magnitude and frequency of differences exist between current `gfortran` bsaeline version and Lahey executable that has been distributed with model datasets.
+the magnitude and frequency of differences exist between current `gfortran` baseline version and
+the Lahey executable that has been distributed with model datasets.
 This provides information about whether additional review should occur
-to confirm the 17.0.2 code version.
+to confirm the 17+ code version.
 
-Tolerances of 2, 10, 100, and 1000 were used to categorize differences.
+Tolerances of 2, 10, 100, 1000, and 10000 were used to categorize differences.
 If the "Number of Time Series Different" is zero,
-It means that the absolute value of all differences was < 2.
+it means that the absolute value of all differences was < 2.
 The number of time series impacts the run time.
 
 | **Dataset** | **Scenario** | **Total Time Series** | **Number of Time Series Different** | **Magnitude of Differences** | **Comments** | **Who** |
 | -- | -- | -- | -- | -- | -- | -- |
-| `cm2015_StateMod` | `cm2015H` | | | | | smalers |
+| `cm2015_StateMod` | `cm2015H` | 33539 | 3392 | < 56420 | Various parameters.  See image below. | smalers |
 | `cm2015_StateMod` | `cm2015H2` | | | | | smalers |
-| `cm2015_StateMod` | `cm2015B` | | | | The 64-bit executable stopped in Carrpl - [see issue](https://github.com/OpenCDSS/cdss-app-statemod-fortran/issues/74) | smalers |
+| `cm2015_StateMod` | `cm2015B` | | | | **The 64-bit executable stopped in Carrpl - [see issue](https://github.com/OpenCDSS/cdss-app-statemod-fortran/issues/74)** | smalers |
 | `gm2015_StateMod_modified` | `gm2015H` | | | | | smalers |
 | `gm2015_StateMod_modified` | `gm2015H2` | | | | | smalers |
 | `gm2015_StateMod_modified` | `gm2015B` | | | | | smalers |
@@ -149,9 +153,13 @@ The number of time series impacts the run time.
 | `sj2015_StateMod_modified` | `sj2015H1` | | | | | smalers |
 | `sj2015_StateMod_modified` | `sj2015H2` | | | | | smalers |
 | `sj2015_StateMod_modified` | `sj2015B` | | | | | smalers |
-| `SP2016_StateMod_modified` | `SP2016H` | | | | **The 64-bit executble does not run - [see issue](https://github.com/OpenCDSS/cdss-app-statemod-fortran/issues/73)** | smalers |
+| `SP2016_StateMod_modified` | `SP2016H` | | | | **The 64-bit executable does not run - [see issue](https://github.com/OpenCDSS/cdss-app-statemod-fortran/issues/73)** | smalers |
 | `wm2015_StateMod_modified` | `wm2015H` | | | | | smalers |
 | `wm2015_StateMod_modified` | `wm2015B` | | | | | smalers |
 | `ym2015_StateMod_modified` | `ym2015H` | | | | | smalers |
 | `ym2015_StateMod_modified` | `ym2015H2` | | | | | smalers |
 | `ym2015_StateMod_modified` | `ym2015B` | | | | | smalers |
+
+The following image illustrates a time series with some of the largest differences.
+
+![15.00.01-17.0.3-3600642-River_Outflow.png](15.00.01-17.0.3-3600642-River_Outflow.png)
