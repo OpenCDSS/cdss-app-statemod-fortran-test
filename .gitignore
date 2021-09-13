@@ -10,56 +10,15 @@
 # General exclusions.
 *.exe
 *.log
-
-# Products of compiling software (but need to be careful if library dependencies are included)
-*.o
-*.obj
-*.exe
-*.lib
-*.a
-*.so
-*.log
-
-# Ignore all StateMod binary and report output files
-# - these files are created by StateMod
-# - might to be a bit more nuanced if any of these files are needed in tests stored in this repository
-*.chk
-*.tmp
-fort.*
-*.b43
-*.b44
-*.b45
-*.b47
-*.b67
-*.b68
-*.xbe
-*.xbg
-*.xbi
-*.xbm
-*.xca
-*.xcb
-*.xcd
-*.xci
-*.xcw
-*.xdd
-*.xgn
-*.xir
-*.xop
-*.xou
-*.xpl
-*.xre
-*.xrh
-*.xri
-*.xss
-*.xtb
-*.xwr
+*junk*
 
 # Specific folders that should be ignored:
 # - downloads are large and dynamic
 # - datasets are large and dynamic
 # - ignore except for README.md that explains folders
 
-# Downloads.
+# Downloads:
+# - most is dynamic except for README files
 /downloads/datasets/*
 !/downloads/datasets/README.md
 /downloads/executable-zips/*
@@ -67,6 +26,40 @@ fort.*
 /downloads/executables/*
 !/downloads/executables/README.md
 
-# Datasets.
+# Dataset tests:
+# - everything is dynamic except for README files
 /test/datasets/*
 !/test/datasets/README.md
+
+# Example tests:
+# - ignore dynamic files in results from examples
+# - because StateMod output files may be saved as expected results,
+#   only ignore in test results folder below
+/test/examples/**/results/**
+
+# Ignore temporary files from utility programs.
+SmNewRsp.out
+SmNewRsp.log
+
+# Ignore all StateMod binary and report output files
+# - these files are created by StateMod
+# - might to be a bit more nuanced if any of these files are needed in tests stored in this repository
+# - this list may need to be updated as more example tests are implemented
+/test/examples/*/*.b*
+/test/examples/*/*.chk
+/test/examples/*/*.tmp
+/test/examples/*/fort.*
+# All .x files are assumed to be output files:
+# - may need special handling for some files like .xbm, but can save in expected-results to commit
+# - use a single asterisk so that it does not match subdirectories, which would ignore 'expected-results/'
+/test/examples/*/*.x*
+
+# Products of compiling software:
+# - only needed if utility programs are compiled here, may be unlikely
+*.o
+*.obj
+*.exe
+*.lib
+*.a
+*.so
+*.log

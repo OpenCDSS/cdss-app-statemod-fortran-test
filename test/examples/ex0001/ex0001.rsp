@@ -1,0 +1,30 @@
+# _______________________________________________________
+#
+#  SmNewRsp
+#  Create a new variable format StateMod
+#  response file from an old format)
+#  State of Colorado
+#  Version: 1.2.0                   
+#  Last revision date: 2021-09-12
+#
+# _______________________________________________________
+#
+# StateMod Response File
+#
+# Type                                    Name
+# ______________________________________  ________________________________________________________________________
+Control                                 = ex0001.ctl
+River_Network                           = ex0001.rin
+Diversion_Station                       = ex0001.dds
+StreamGage_Station                      = ex0001.ris
+Instreamflow_Station                    = ex0001.ifs
+Instreamflow_Right                      = ex0001.ifr
+Diversion_Right                         = ex0001.ddr
+Stream_Base_Monthly                     = ex0001.rim
+Diversion_Demand_Monthly                = ex0001.ddm
+Instreamflow_Demand_AverageMonthly      = ex0001.ifa
+DelayTable_Monthly                      = ex0001.dly
+StreamGage_Historic_Monthly             = ex0001.rih
+Diversion_Historic_Monthly              = ex0001.ddh
+GeographicInformation                   = ex0001.gis
+OutputRequest                           = ex0001.out

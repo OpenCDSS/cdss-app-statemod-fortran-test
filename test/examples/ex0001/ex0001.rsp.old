@@ -1,0 +1,29 @@
+# ex0001.rsp; Response file for Statemod Example 
+#
+# Name                                                                  Description (optional)
+#---------------                                                        ----------------------
+ex0001.ctl                                                              Control
+ex0001.rin                                                              River network
+ex0001.dum                                                              Reservoir station file
+ex0001.dds                                                              Direct Diversion station file
+ex0001.ris                                                              Stream Gauge file
+ex0001.ifs                                                              Instream flow station file
+ex0001.ifr                                                              Instream flow right file
+ex0001.dum                                                              Reservoir rights file
+ex0001.ddr                                                              Direct diversion rights file
+ex0001.dum                                                              Operational rights file
+ex0001.dum                                                              Precipitation file - Annual
+ex0001.dum                                                              Evaporation file - Monthly or Annual
+ex0001.rim                                                              Streamflow - Monthly
+ex0001.ddm                                                              Direct diversion demand - Monthly
+ex0001.dum                                                              Direct diversion demand overwrite - Monthly
+ex0001.dum                                                              Direct diversion demand - Annual
+ex0001.ifa                                                              Instream flow demand - Annual
+ex0001.dly                                                              Delay Table file
+ex0001.dum                                                              Reservoir target - Annual
+ex0001.dum                                                              Reservoir End of month contents - Monthly
+ex0001.dum                                                              Base flow data for river stations without gauged data
+ex0001.rih                                                              Historic Streamflow - Monthly
+ex0001.ddh                                                              Historic Diversions - Monthly
+ex0001.gis                                                              Graphics Files
+ex0001.out                                                              Output Control

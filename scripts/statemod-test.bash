@@ -9,6 +9,59 @@
 
 # Supporting functions, alphabetized...
 
+# List development executables.
+# - specify the first parameter as:
+#     "numbered" to number and indent
+#     "indented" to indent
+#     "raw" no indent and no number
+# - the output is only the executable, for example:
+#     statemod-17.0.2-gfortran-win-64bit.exe
+listDevExecutables() {
+  local format
+  local fileCount
+  local maxdepth mindepth
+
+  format="raw"
+  if [ $# -gt 0 ]; then
+    format="${1}"
+  fi
+
+  mindepth=1
+  maxdepth=1
+
+  # Use 'find':
+  # - more control than 'ls'
+  # - list with newest first since most often running tests on newer versions
+  # - don't list 'check' or 'o3' versions - focus on release version (could change to list more later)
+  find ${statemodDevFolder} -mindepth ${mindepth} -maxdepth ${maxdepth} -type f -name 'statemod*.exe' | grep -v 'check' | grep -v 'o3' | sort -r | awk -v format=${format} '
+     BEGIN {
+       line = 0
+     }
+     {
+       line = line + 1
+       # Split the long path and only print the last parts.
+       nparts = split($0, parts, "/")
+       if ( format == "numbered" ) {
+         # Print with line numbers and indent.
+         printf("  %2d - %s\n", line, parts[nparts])
+       }
+       else if ( format == "indented" ) {
+         # Print with no line numbers and indent.
+         printf("  %s\n", parts[nparts])
+       }
+       else {
+         # Print with no line numbers and no indent.
+         printf("%s\n", parts[nparts])
+       }
+     }'
+
+  # Return the number of files:
+  # - use the same filters as above
+  # - mainly want to know if non-zero
+  fileCount=$('ls' -1 ${statemodDevFolder}/statemod*.exe | grep -v 'check' | grep -v 'o3' | wc -l)
+  return ${fileCount}
+}
+
 # List the download datasets:
 # - specify the first parameter as:
 #     "numbered" to number and indent
@@ -1936,13 +1989,15 @@ runInteractive () {
 
   dataset=""
   lineEquals="================================================================================================"
+  lineEqualsDatasets="================================== Dataset Tests ==============================================="
+  lineEqualsTests="================================== Small Tests ================================================="
 
   while [ "1" = "1" ]; do
     # Remove blank links when other items are added to provide separation.
     ${echo2} ""
     #${echo2} "================================================================================================"
     #${echo2} "Current dataset:  ${dataset}"
-    ${echo2} "${lineEquals}"
+    ${echo2} "${lineEqualsDatasets}"
     ${echo2} "Downloads...${menuColor}lsdd${endColor}s                  - list downloaded datasets"
     ${echo2} "            ${menuColor}lsde${endColor}xe                 - list downloaded executables"
     ${echo2} ""
@@ -1961,6 +2016,8 @@ runInteractive () {
     ${echo2} "            ${menuColor}runc${endColor}omp                - run a dataset variant scenario comparison using TSTool"
     ${echo2} "            ${menuColor}v${endColor}heatmap               - view a heatmap for a time series' differences"
     ${echo2} "            ${menuColor}rmc${endColor}omp                 - remove a comparison"
+    ${echo2} "${lineEqualsTests}"
+    ${echo2} "            ${menuColor}runt${endColor}stool              - run TSTool to run individual small tests"
     ${echo2} "${lineEquals}"
     ${echo2} "            ${menuColor}q${endColor}uit"
     ${echo2} "            ${menuColor}h${endColor}elp [command]"
@@ -2085,6 +2142,12 @@ runInteractive () {
     elif [[ "${answer}" = "rmc"* ]]; then
       removeTestDatasetComp
     # ======================
+    # Small tests 
+    # ======================
+    elif [[ "${answer}" = "runt"* ]]; then
+      # Run TSTool for small tests
+      runSmallTests
+    # ======================
     # General commands
     # ======================
     elif [[ "${answer}" = "h"* ]]; then
@@ -2109,6 +2172,128 @@ runInteractive () {
       echo "Don't know how to handle command:  ${answer}"
     fi
   done
+}
+
+# Run small tests using TSTool:
+# - this is similar to TSTool tests.
+runSmallTests() {
+  logText ""
+  logText "Select a StateMod executable to use for tests."
+  logText "TSTool will run this version for all tests that are run."
+  logText ""
+  read -p "Use executable from test framework (t) or development (d/D) (D/q/t/ ): " executableSource
+  if [ "${executableSource}" = "q" -o "${executableSource}" = "Q" ]; then
+    exit 0
+  elif [ -z "${executableSource}" -o "${executableSource}" = "d" -o "${executableSource}" = "D" ]; then
+    # Default: get the StateMod executable from the development folder.
+    logText ""
+    logText "Available development executables:"
+    logText ""
+    listDevExecutables numbered
+    nexe=$?
+    if [ "${nexe}" -eq 0 ]; then
+      logInfo ""
+      logInfo "There are no development executables.  Need to compile an executable."
+      return 0
+    fi
+    logText ""
+    read -p "Select an executable number (#/q/ ): " selectedExecutableNumber
+      if [ "${selectedExecutableNumber}" = "q" -o "${selectedExecutableNumber}" = "Q" ]; then
+      exit 0
+    elif [ -z "${selectedExecutableNumber}" ]; then
+      # Just return rather than chaining a break in the outside loop.
+      return 0
+    else
+      selectedExecutable=$(listDevExecutables | head -${selectedExecutableNumber} | tail -1)
+      # Form the full path to the executable.
+      selectedExecutablePath=${statemodDevFolder}/${selectedExecutable}
+    fi
+  else
+    # Get the StateMod executable from the testing framework.
+    logText ""
+    logText "Available test framework download executables:"
+    logText ""
+    listDownloadExecutables numbered
+    nexe=$?
+    if [ "${nexe}" -eq 0 ]; then
+      logInfo ""
+      logInfo "There are no executables.  Need to download an executable."
+      return 0
+    fi
+    logText ""
+    read -p "Select an executable number (#/q/ ): " selectedExecutableNumber
+      if [ "${selectedExecutableNumber}" = "q" -o "${selectedExecutableNumber}" = "Q" ]; then
+      exit 0
+    elif [ -z "${selectedExecutableNumber}" ]; then
+      # Just return rather than chaining a break in the outside loop.
+      return 0
+    else
+      selectedExecutable=$(listDownloadExecutables | head -${selectedExecutableNumber} | tail -1)
+      # Form the full path to the executable.
+      selectedExecutablePath=${downloadsExecutablesFolder}/${selectedExecutable}
+    fi
+  fi
+
+  # If here, have an executable.  Continue with running tests.
+
+  # The TSTool command file is an information command file with instructions for how to run tests.
+  tstoolCommandFile="${testExamplesFolder}/0-readme/readme.tstool"
+  logInfo ""
+  logInfo "Running TSTool command file to start running small tests:"
+  logInfo "  ${tstoolCommandFile}"
+  if [ ! -f "${tstoolCommandFile}" ]; then
+    logWarning ""
+    logWarning "${warnColor}TSTool command file does not exist:${endColor}"
+    logWarning "${warnColor}  ${tstoolCommandFile}${endColor}"
+    return 1
+  fi
+
+  if [ ! -f "${tstoolExe}" ]; then
+    logWarning ""
+    logWarning "${warnColor}TSTool program does not exist:${endColor}"
+    logWarning "${warnColor}  ${tstoolExe}${endColor}"
+    return 1
+  fi
+
+  if [ ! -f "${selectedExecutablePath}" ]; then
+    logWarning ""
+    logWarning "${warnColor}StateMod executable does not exist:${endColor}"
+    logWarning "${warnColor}  ${selectedExecutablePath}${endColor}"
+    return 1
+  fi
+
+  # Set the maximum memory.
+  javaXmxOption=""
+  if [ -n "${javaXmx}" ]; then
+    javaXmxOption=" --java-xmx=${javaXmx}"
+  fi
+
+  # Run TSTool:
+  # - the TSTool executable location was determined at script startup
+  # - run in the background so can have multiple sessions/visualizations going at the same time,
+  #   although this does use more memory on the computer
+  # - checking the exit status on background processes may be tricky
+
+  doBackground="true"
+  if [ "${doBackground}" = "true" ]; then
+    ${tstoolExe} ${javaXmxOption} -- ${tstoolCommandFile} StateModExecutable=="${selectedExecutablePath}" &
+    logInfo "${menuColor}Running TSTool in the background so that other tasks can be run.${endColor}"
+    logInfo "${menuColor}TSTool messages may be written as it runs.${endColor}"
+    logInfo "${menuColor}If necessary, press return to view the menu.${endColor}"
+    # Give a little time to see the above.
+    sleep 1
+    # Can't get the return status here.
+    return 0
+  else
+    logInfo "${menuColor}Running TSTool before continuing.${endColor}"
+    ${tstoolExe} ${javaXmxOption} -- ${tstoolCommandFile} StateModExecutable=="${selectedExecutablePath}"
+    if [ $? -ne 0 ]; then
+      logWarning ""
+      logWarning "${warnColor}Error running TSTool.${endColor}"
+      return 1
+    fi
+  fi
+  return 0
 }
 
 # Run a test dataset comparison using TSTool.
@@ -2472,7 +2657,7 @@ setTstoolExe() {
         #      /c/CDSS/TSTool-13.04.00
         # - check the major version part
         majorVersion=$(echo ${tstoolFolder} | cut -d '-' -f 2 | cut -d '.' -f 1)
-        logInfo "majorVersion=${majorVersion}"
+        logDebug "majorVersion=${majorVersion}"
         if [ "${majorVersion}" -ge 14 ]; then
           # OK to use, else may not have any valid versions at the end.
           tstoolExeTry="${tstoolFolder}/bin/tstool"
@@ -2717,20 +2902,27 @@ scriptFolder=$(cd $(dirname "$0") && pwd)
 scriptName=$(basename $0)
 # The following works whether or not the script name has an extension.
 scriptNameNoExt=$(echo ${scriptName} | cut -d '.' -f 1)
-version="1.0.0 2021-09-06"
+version="1.1.0 2021-09-12"
 
 # Configure the echo command for colored output:
 # - do this up front because results are used in messages
 configureEcho
 
 # Main folders.
-testRepoFolder=$(dirname ${scriptFolder})
+testRepoFolder="$(dirname ${scriptFolder})"
 downloadsFolder="${testRepoFolder}/downloads"
 downloadsDatasetsFolder="${downloadsFolder}/datasets"
 downloadsExecutablesFolder="${downloadsFolder}/executables"
 testFolder="${testRepoFolder}/test"
 testDatasetsFolder="${testFolder}/datasets"
+testExamplesFolder="${testFolder}/examples"
 tstoolTemplatesFolder="${testRepoFolder}/tstool-templates"
+
+# StateMod development folder is needed for small tests:
+# - assume the normal development folders
+gitReposFolder="$(dirname ${testRepoFolder})"
+statemodRepoFolder="${gitReposFolder}/cdss-app-statemod-fortran"
+statemodDevFolder="${statemodRepoFolder}/src/main/fortran"
 
 logInfo "Important folders and files:"
 logInfo "scriptFolder=${scriptFolder}"
@@ -2740,7 +2932,9 @@ logInfo "downloadsDatasetsFolder=${downloadsDatasetsFolder}"
 logInfo "downloadsExecutablesFolder=${downloadsExecutablesFolder}"
 logInfo "testfolder=${testFolder}"
 logInfo "testDatasetsFolder=${testDatasetsFolder}"
+logInfo "testExamplesFolder=${testExamplesFolder}"
 logInfo "tstoolTemplatesFolder=${tstoolTemplatesFolder}"
+logInfo "statemodDevFolder=${statemodDevFolder}"
 
 # Controlling variables.
 # Run mode for script ('batch' or 'interactive"):

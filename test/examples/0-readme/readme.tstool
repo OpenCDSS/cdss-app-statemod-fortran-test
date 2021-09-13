@@ -1,0 +1,19 @@
+#
+# This command file provides information about running small StateMod tests.
+# Follow the instructions below to run small tests.
+#
+# Individual Tests - to run individual tests
+# =========================================================================
+# Run individual tests by opening and running command files in:
+#   ../examples
+#
+# Test Suite - to run more than one test
+# =========================================================================
+# Create the test suite to run all command files by opening and running the command file in:
+#   ../examples-suite/create/
+# Then open and run the command file in:
+#   ../examples-suite/run/
+#
+# -------------------------------------------------------------------------
+# Set the file as read-only to prevent accidental edits.
+#@readOnly
