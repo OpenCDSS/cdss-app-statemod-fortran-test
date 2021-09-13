@@ -463,6 +463,7 @@ listTestDatasetComps() {
 
 # List the time series in a comparison:
 # - the time series are taken from the TSTool CompareTimeSeries summary output file
+# - use slash to separate output parts because of use of dash in data
 # - first or second parameter can be 'raw', 'numbered', or 'indented'
 # - first or second parameter can be the summary difference file
 # - return the number of time series
@@ -495,7 +496,7 @@ listTestDatasetCompTimeSeries () {
   fi
 
   # Filter by # since it shows up in comments and also the header line.
-  # Include the TSID and description columns in output.
+  # Include the TSID, TSAlais, and description columns in output, optionally with the number.
   cat ${summaryFile} | grep -v '#' | awk -F'|' -v format=${format} '
      BEGIN {
        line = 0
@@ -504,15 +505,15 @@ listTestDatasetCompTimeSeries () {
        line = line + 1
        if ( format == "numbered" ) {
          # Print with line numbers and indent.
-         printf("  %4d - %s - %s\n", line, $5, $4)
+         printf("  %4d / %s / %s / %s\n", line, $5, $6, $4)
        }
        else if ( format == "indented" ) {
          # Print with no line numbers and with indent.
-         printf("  %s - %s\n", $5, $4)
+         printf("  %s / %s / %s\n", $5, $6, $4)
        }
        else {
          # Print with no line numbers and no indent.
-         printf("%s - %s\n", $5, $4)
+         printf("%s / %s / %s\n", $5, $6, $4)
        }
      }'
 
@@ -2440,12 +2441,12 @@ runTestDatasetComp() {
       logInfo "${menuColor}If necessary, press return to view the menu.${endColor}"
       # Give a little time to see the above.
       sleep 1
-      ${tstoolExe} ${javaXmxOption} -- ${tstoolCommandFile} Dataset1Folder==${datasetStatemodFolder1} Dataset2Folder==${datasetStatemodFolder2} Scenario==${selectedScenario}&
+      ${tstoolExe} ${javaXmxOption} -- "${tstoolCommandFile}" Dataset1Folder=="${datasetStatemodFolder1}" Dataset2Folder=="${datasetStatemodFolder2}" Scenario=="${selectedScenario}"&
       # Can't get the return status here.
       return 0
     else
       logInfo "${menuColor}Running TSTool before continuing.${endColor}"
-      ${tstoolExe} ${javaXmxOption} -- ${tstoolCommandFile} Dataset1Folder==${datasetStatemodFolder1} Dataset2Folder==${datasetStatemodFolder2} Scenario==${selectedScenario}
+      ${tstoolExe} ${javaXmxOption} -- "${tstoolCommandFile}" Dataset1Folder=="${datasetStatemodFolder1}" Dataset2Folder=="${datasetStatemodFolder2}" Scenario=="${selectedScenario}"
       if [ $? -ne 0 ]; then
         logWarning ""
         logWarning "${warnColor}Error running TSTool.${endColor}"
@@ -2715,14 +2716,13 @@ viewCompDifferenceHeatmap() {
     # Don't want to continue.
     return
   else
-    # Run the comparison.
     selectedComp=$(listTestDatasetComps | head -${selectedCompNumber} | tail -1)
     logText "Selected comparison: ${selectedComp}"
     testCompFolder="${testDatasetsFolder}/${selectedComp}"
     if [ ! -d "${testCompFolder}" ]; then
       logWarning "Test dataset comp folder does not exist: ${testCompFolder}"
       logWarning "Check script code."
-      logWarning "Cannot run comparison using TSTool."
+      logWarning "Cannot view time series difference heatmap using TSTool."
       return 1
     fi
 
@@ -2733,7 +2733,7 @@ viewCompDifferenceHeatmap() {
     # - ${datasetVariantName1} is used to determine the variant folder, with StateMod folder passed to TSTool
     datasetName=$(echo ${testCompFolder} | awk -F/ '{print $(NF -2)}')
     if [ -z "${datasetName}" ]; then
-      logWarning "${warnColor}Could not determine Scenario for TSTool.${endColor}"
+      logWarning "${warnColor}Could not determine dataset name for TSTool.${endColor}"
       return 1
     fi
 
@@ -2769,7 +2769,7 @@ viewCompDifferenceHeatmap() {
       return 1
     fi
 
-    # Prompt for the response file to use for the scenario:
+    # Prompt for the scenario to view:
     # - assuming that each folder contains the same dataset files, which should be true,
     #   get the list of response files
     logText ""
@@ -2789,7 +2789,7 @@ viewCompDifferenceHeatmap() {
     fi
 
     # Prompt for the time series to use for the visualization:
-    # - get the list from the TSTool CompareTimeSeries summary output file
+    # - get the list from the TSTool CompareTimeSeries summary output file from previous analysis step
     logText ""
     logText "Time series with differences for dataset ${datasetName}:"
     logText ""
@@ -2802,7 +2802,7 @@ viewCompDifferenceHeatmap() {
       # Don't want to continue.
       return 0
     else
-      # Have a scenario number.  Get the selected TSID.
+      # Have a time series number.  Get the selected TSID and TSAlias.
       selectedTsid=$(listTestDatasetCompTimeSeries ${testCompFolder}/results/${selectedScenario}-summary-differences.txt | head -${selectedTsNumber} | tail -1)
     fi
 
@@ -2812,20 +2812,29 @@ viewCompDifferenceHeatmap() {
     # Trim surrounding whitespace but keep within values:
     # - actually, replace inner spaces with ___ (3 underscores) because spaces in the command line cause issues
     # - then use the TSTool --space-replacement command line option
-    tsid=$(echo ${selectedTsid} | awk -F- '{
+    # - use slash as the delimiter because dash causes problems parsing the parts
+    tsid=$(echo ${selectedTsid} | awk -F/ '{
       sub(/^[ \t]+/,"",$1);
       sub(/[ \t]+$/,"",$1);
       print $1
     }' | sed 's/ /___/g')
-    tsDescription=$(echo ${selectedTsid} | awk -F- '{
+    tsalias=$(echo ${selectedTsid} | awk -F/ '{
       sub(/^[ \t]+/,"",$2);
       sub(/[ \t]+$/,"",$2);
       print $2
     }' | sed 's/ /___/g')
+    tsDescription=$(echo ${selectedTsid} | awk -F/ '{
+      sub(/^[ \t]+/,"",$3);
+      sub(/[ \t]+$/,"",$3);
+      print $3
+    }' | sed 's/ /___/g')
 
+    logInfo "TSTool command line includes:  Dataset1Folder==${datasetStatemodFolder1}"
+    logInfo "TSTool command line includes:  Dataset2Folder==${datasetStatemodFolder2}"
     logInfo "TSTool command line includes:  Scenario==${selectedScenario}"
     logInfo "TSTool command line includes:  Description==${tsDescription}"
     logInfo "TSTool command line includes:  TSID==${tsid}"
+    logInfo "TSTool command line includes:  TSAlias==${tsalias}"
 
     # Make sure the difference time series data file exists.
     diffDataFile="${testCompFolder}/results/${selectedScenario}-ts-diff.dv"
@@ -2872,7 +2881,8 @@ viewCompDifferenceHeatmap() {
 
     doBackground="true"
     if [ "${doBackground}" = "true" ]; then
-      ${tstoolExe} ${javaXmxOption} -- ${tstoolCommandFile} --space-replacement='___' TSID=="${tsid}" Description=="${tsDescription}" Scenario=="${selectedScenario}" &
+      logInfo "Running: ${tstoolExe} ${javaXmxOption} -- ${tstoolCommandFile} --space-replacement='___' TSAlias==\"${tsalias}\" TSID==\"${tsid}\" Dataset1Folder==\"${datasetStatemodFolder1}\" Dataset2Folder==\"${datasetStatemodFolder2}\" Description==\"${tsDescription}\" Scenario==\"${selectedScenario}\""
+      ${tstoolExe} ${javaXmxOption} -- ${tstoolCommandFile} --space-replacement='___' TSAlias=="${tsalias}" TSID=="${tsid}" Dataset1Folder=="${datasetStatemodFolder1}" Dataset2Folder=="${datasetStatemodFolder2}" Description=="${tsDescription}" Scenario=="${selectedScenario}" &
       logInfo "${menuColor}Running TSTool in the background so that other tasks can be run.${endColor}"
       logInfo "${menuColor}TSTool messages may be written as it runs.${endColor}"
       logInfo "${menuColor}If necessary, press return to view the menu.${endColor}"
@@ -2882,7 +2892,8 @@ viewCompDifferenceHeatmap() {
       return 0
     else
       logInfo "${menuColor}Running TSTool before continuing.${endColor}"
-      ${tstoolExe} ${javaXmxOption} -- ${tstoolCommandFile} --space-replacement='___' TSID=="${tsid}" Description=="${tsDescription}" Scenario=="${selectedScenario}"
+      logInfo "${tstoolExe} ${javaXmxOption} -- ${tstoolCommandFile} --space-replacement='___' TSAlias==\"${tsalias}\" TSID==\"${tsid}\" Dataset1Folder==\"${datasetStatemodFolder1}\" Dataset2Folder==\"${datasetStatemodFolder2}\" Description==\"${tsDescription}\" Scenario==\"${selectedScenario}\""
+      ${tstoolExe} ${javaXmxOption} -- ${tstoolCommandFile} --space-replacement='___' TSAlias=="${tsalias}" TSID=="${tsid}" Dataset1Folder=="${datasetStatemodFolder1}" Dataset2Folder=="${datasetStatemodFolder2}" Description=="${tsDescription}" Scenario=="${selectedScenario}"
       if [ $? -ne 0 ]; then
         logWarning ""
         logWarning "${warnColor}Error running TSTool.${endColor}"
@@ -2902,7 +2913,7 @@ scriptFolder=$(cd $(dirname "$0") && pwd)
 scriptName=$(basename $0)
 # The following works whether or not the script name has an extension.
 scriptNameNoExt=$(echo ${scriptName} | cut -d '.' -f 1)
-version="1.1.0 2021-09-12"
+version="1.2.0 2021-09-13"
 
 # Configure the echo command for colored output:
 # - do this up front because results are used in messages

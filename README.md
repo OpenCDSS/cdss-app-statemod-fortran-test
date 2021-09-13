@@ -361,7 +361,7 @@ The existing testing framework features can be leverated to increase automation.
 
 In addition to tests that use full datasets,
 small tests are implemented using examples.  See the
-[Developer Documentation Testing](https://opencdss.state.co.us/tstool/latest/doc-dev/dev-tasks/testing/testing/)
+[Developer Documentation Testing](https://opencdss.state.co.us/statemod/latest/doc-dev/dev-tasks/testing/)
 documentation for details.
 
 ## Release Notes

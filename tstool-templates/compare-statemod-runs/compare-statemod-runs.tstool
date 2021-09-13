@@ -18,7 +18,7 @@ SetProperty(PropertyName="TSIDPattern",PropertyType=String,PropertyValue="*")
 # Read all of the time series matching the requested TSID pattern:
 # - can set to a subset for testing and then use "*" for full run
 # - read b42 (well), b43 (diversion and stream), b44 (reservoir) for monthly
-# - use the alias to help with uniqueness because b43 and b44 time series would not otherwise be unique
+# - use the alias to help with uniqueness because b43 and b44 time series may not otherwise be unique
 # - TODO smalers 2021-09-09 need to add daily
 ReadStateModB(InputFile="${Dataset1Folder}/${Scenario}.b43",TSID="${TSIDPattern}",Alias="b43-%L-%T")
 ReadStateModB(InputFile="${Dataset2Folder}/${Scenario}.b43",TSID="${TSIDPattern}",Alias="b43-%L-%T")
@@ -37,15 +37,18 @@ CompareTimeSeries(MatchLocation=False,MatchDataType=False,MatchAlias=True,Tolera
 SetProperty(PropertyName="RunEndTime",PropertyType=DateTime,PropertyValue="CurrentToSecond")
 #
 # Save the difference time series data to a file:
+# - this is commented out by default because large datasets with many differences could create HUGE files
 # - this allows later visualization of specific time series without rerunning the comparison
 # - this may be an issue if the difference file is very large,
 #   in which case CompareTimeSeries may need to be run on individual time series
 # - maybe have a check on the number of difference time series and if too large don't write it
 # - OK to ignore if no files are selected, which indicates no differences
-SelectTimeSeries(TSList=AllMatchingTSID,TSID="Diff_*",DeselectAllFirst=True,IfNotFound=Ignore,SelectCountProperty="DiffTSCount")
-If(Name="If_HaveDiffTS",Condition="${DiffTSCount} > 0")
-WriteDateValue(TSList=SelectedTS,OutputFile="results/${Scenario}-ts-diff.dv")
-EndIf(Name="If_HaveDiffTS")
+#---- Start commented out -------------
+#SelectTimeSeries(TSList=AllMatchingTSID,TSID="Diff_*",DeselectAllFirst=True,IfNotFound=Ignore,SelectCountProperty="DiffTSCount")
+#If(Name="If_HaveDiffTS",Condition="${DiffTSCount} > 0")
+#WriteDateValue(TSList=SelectedTS,OutputFile="results/${Scenario}-ts-diff.dv")
+#EndIf(Name="If_HaveDiffTS")
+#---- End commented out -------------
 #
-# Write information about the comparison run time, to evaluate performance.
+# Output information about the comparison run time, to evaluate performance.
 Message(Message="RunStartTime=${RunStartTime}, RunEndTime=${RunEndTime}")

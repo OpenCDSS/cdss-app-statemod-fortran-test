@@ -9,7 +9,7 @@
 ProductType = "Graph"
 TotalWidth = "550"
 TotalHeight = "800"
-MainTitleString = "${TSAlias} - ${Description}"
+MainTitleString = "${TSID} - ${Description}"
 MainTitleFontSize = "18"
 MainTitleFontStyle = "Bold"
 SubTitleString = "Difference between matching time series"
@@ -21,6 +21,6 @@ GraphType = "Raster"
 
 [Data 1.1]
 
-TSAlias = "${TSAlias}"
+TSID = "Diff_${TSID}~DateValue~results/${Scenario}-ts-diff.dv"
 SymbolTablePath = "${WorkingDir}/ts-diff.csv"
 RasterGraphLegendPosition = "Right"
