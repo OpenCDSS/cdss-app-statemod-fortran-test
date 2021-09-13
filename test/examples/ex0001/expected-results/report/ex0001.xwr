@@ -1,0 +1,53 @@
+#
+# ________________________________________________________________________________
+# *.xwr       Water rights list sorted by basin rank           
+#
+#   STATEMOD                                                                      
+#   Example 1 Simple 8 node network                                               
+#
+# Statemod Version: 17.0.3   Date = 2021/09/12)
+# Run date:          12/ 9/20 17:48:37
+# Time Step:         Monthly 
+# 
+# ________________________________________________________________________________
+#
+# *.xwr; Water Right Information
+#        Number of rights =          4
+#
+# ________________________________________________________________________________________________________________________
+#
+#
+# Where:
+#  1. Rank           = Water right basin rank
+#  2. Type           = Water right type
+#                   1=Instream,
+#                   2=Reservoir,
+#                   3=Diversion,
+#                   4=Power,
+#                   5=Operational,
+#                   6=Well,
+#  3. Admin #        = Administration Number
+#  4. On/Off (1)     = On or Off switch
+#                      0=off
+#                      1=on
+#                     +n=begin in year n
+#                     -n=stop in year n
+#  5. Str Id #1      = Primary structure for this right
+#  6. Str Id #2      = Secondary structure for this right (-1=N/A)#  7. Amount         = Decreed capacity & unit (c=CFS, a=AF)
+#  8. Right Name     = Water right name
+#  9. Str Name #1    = Primary structure for this right
+# 10. Str Name #2    = Secondary structure for this right (-1=N/A)
+#
+# (1) Certain operating rules may cause a structure to be
+#     be turned off since if it is controlled by an 
+operating rule
+#
+#
+#   Rank ID               Type         Admin #  On/Off  Str ID #1    Str ID #2           Amount Right Name                Str Name #1               Str Name #2
+#    (1) (2)               (3)             (4)     (5)  (6)          (7)                    (8) (9)                       (10)                       (11)
+#_______ _____________ _______ _______________ _______  ____________ ____________   ___________ ________________________  ________________________  ________________________
+
+       1 Isf_1 WR_1          1         1.00000       1  Isf_1        -1                65.500 c Instream Flow 1           Instream Demand         
+       2 Dem_1 Wr#1          3         2.00000       1  Dem_1        -1               100.000 c M&I Demand _1             Municipal Demand _1     
+       3 Dem_2 Wr#1          3         6.00000       1  Dem_2        -1                60.000 c Irrigation Demand _2      Irrigation Demand _2    
+       4 Dem_3 Wr#1          3         7.00000       1  Dem_3        -1               100.000 c Irrigation Demand _3      Irrigation Demand _3    
