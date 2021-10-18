@@ -1,0 +1,26 @@
+# Download and unzip CDSS ym2015_Daily_H dataset:
+# - the dataset is shared by Wilson Water Group using Citrix
+# - the Citrix shared website provides zip file (used below) and
+#   individual files (not used below)
+#
+# =====================================================================
+# Download dataset:
+# - do not know what the standard naming convention is for CDSS because
+#   no daily datasets are available, so just use "_daily"
+# - it is up to the State and modelers to be consistent with naming
+# - as of 2021-10-16 the zip file is 6.2 MB
+SetProperty(PropertyName="DownloadZipFile",PropertyType=String,PropertyValue="datasets/ym2015_StateMod_daily.zip")
+#
+# The following does not work to automate the download so provide information in a prompt before continuing.
+# WebGet(URI="https://wilsonwatergroup.sharefile.com/share/view/s5e6dc82a491a4766a3899f2dd095feed/fod00e04-ea14-4a3e-9241-500153f138ea",LocalFile="${DownloadZipFile}",ResponseCodeProperty="WebGetHttpCode")
+Message(Message="The download cannot be automated.\nUse a browser to download from the following URL:\n    https://wilsonwatergroup.sharefile.com/share/view/s5e6dc82a491a4766a3899f2dd095feed/fod00e04-ea14-4a3e-9241-500153f138ea\nUse the Download button and save/rename to a file named:\n    downloads/datasets/ym2015_StateMod_daily.zip\nThen press 'Continue' to unzip the file.",PromptActions="Cancel,Continue")
+CheckFile(InputFile="${DownloadZipFile}",IfNotFound="Fail",Statistic="FileSizeBytes",CheckCriteria="<",CheckValue1=6000000,IfCriteriaMet=Fail,CheckResultPropertyName="DownloadStatus",CriteriaMetPropertyValue="Failure",CriteriaNotMetPropertyValue="Success")
+If(Name="If_DownloadOK",Condition="${DownloadStatus} == Failure")
+Message(Message="Download failed.  Exiting without unzipping.",CommandStatus=FAILURE)
+Exit()
+EndIf(Name="If_DownloadOK")
+# Unzip to the standard dataset folder for StateMod model files:
+# - there will be multiple folders, with "StateMod" being the main folder
+# - to ensure that the files are current, delete existing
+# - since the delete operation is destructive, prompt for confirmation
+UnzipFile(InputFile="${DownloadZipFile}",OutputFolder="../test/datasets/ym2015_StateMod_daily/0-dataset",RemoveOutputFolder=TrueWithPrompt)
