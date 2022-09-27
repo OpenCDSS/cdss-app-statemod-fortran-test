@@ -41,6 +41,8 @@ All tests were able to run with:
 ./statemod-test.bash --java-xmx=4096m
 ```
 
+A value of `8000m` was used for the Yampa daily data set.
+
 ## 17.0.2-gfortran-win-64bit Baseline
 
 These comparisons use the 17.0.2 `gfortran` 64-bit version as the baseline.
@@ -156,6 +158,7 @@ The number of time series impacts the run time.
 | `SP2016_StateMod_modified` | `SP2016H` | | | | **The 64-bit executable does not run - [see issue](https://github.com/OpenCDSS/cdss-app-statemod-fortran/issues/73)** | smalers |
 | `wm2015_StateMod_modified` | `wm2015H` | | | | | smalers |
 | `wm2015_StateMod_modified` | `wm2015B` | | | | | smalers |
+| `ym2015_StateMod_daily` | `ym2015H2_Daily` | 19896 | 3289 (2563 if `Control_Right` and `Control_Location` are ignored). | 922 | Larger values are different for `Control_Right` and `Control_Location`. | smalers |
 | `ym2015_StateMod_modified` | `ym2015H` | | | | | smalers |
 | `ym2015_StateMod_modified` | `ym2015H2` | | | | | smalers |
 | `ym2015_StateMod_modified` | `ym2015B` | | | | | smalers |
